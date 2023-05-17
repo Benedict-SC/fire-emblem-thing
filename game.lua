@@ -1,6 +1,7 @@
 --states = {"TITLE,STATS,BATTLE"}
 Game = function()
     local game = {};
+    game.tileSize = 50;
     game.battle = Battle("assets/json/testmap.json");
     game.statspage = StatsPage();
     game.state = "BATTLE"

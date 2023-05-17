@@ -92,15 +92,15 @@ path.renderPathBit = function(movepath,idx)
     local xoff = 0;
     local yoff = 0;
     if(rotations == 1) then 
-        xoff = tileSize; 
+        xoff = game.tileSize; 
     end
     if(rotations == 2) then 
-        yoff = tileSize;
-        xoff = tileSize;
+        yoff = game.tileSize;
+        xoff = game.tileSize;
     end
     if(rotations == 3) then 
-        yoff = tileSize;
+        yoff = game.tileSize;
     end
 
-    love.graphics.draw(path.bits[bitIdx],(movepath[idx].x - 1)*tileSize+xoff,(movepath[idx].y - 1)*tileSize+yoff,radians);
+    love.graphics.draw(path.bits[bitIdx],(movepath[idx].x - 1)*game.tileSize+xoff,(movepath[idx].y - 1)*game.tileSize+yoff,radians);
 end

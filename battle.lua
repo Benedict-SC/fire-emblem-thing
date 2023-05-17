@@ -1,4 +1,3 @@
-tileSize = 50;
 Battle = function(mapfile)
     local battle = {};
     battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, TARGET, COMBAT
@@ -16,7 +15,7 @@ Battle = function(mapfile)
         battle.map.renderUnits();
         if battle.state == "MAINPHASE" or battle.state == "PATHING" then
             if (battle.selectorPos.x >= 1 and battle.selectorPos.y >= 1) then
-                love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*tileSize,(battle.selectorPos.y - 1)*tileSize)
+                love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize)
             end
         end
         if battle.state == "ACTION" then
@@ -24,8 +23,8 @@ Battle = function(mapfile)
         end
     end
     battle.update = function()
-        battle.updateSelectorPosition();
         if battle.state == "MAINPHASE" then
+            battle.updateSelectorPosition();
             if(battle.input_detail()) then --We want to pull up the stats for some unit on the battlefield
                 local occ = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
                 if occ then
@@ -73,6 +72,7 @@ Battle = function(mapfile)
                 end
             end
         elseif (battle.state == "PATHING") then
+            battle.updateSelectorPosition();
             battle.processNodePath();
             if battle.input_select() then --we've clicked on a space to move to
                 local cell = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x];
@@ -100,10 +100,10 @@ Battle = function(mapfile)
                         local origin = battle.movePath[1];
                         local src = battle.movePath[u.walkIndex];
                         local dest = battle.movePath[u.walkIndex + 1];
-                        local srcOffX = tileSize * (src.x - origin.x);
-                        local srcOffY = tileSize * (src.y - origin.y);
-                        local segmentOffX = percent * tileSize * (dest.x - src.x);
-                        local segmentOffY = percent * tileSize * (dest.y - src.y);
+                        local srcOffX = game.tileSize * (src.x - origin.x);
+                        local srcOffY = game.tileSize * (src.y - origin.y);
+                        local segmentOffX = percent * game.tileSize * (dest.x - src.x);
+                        local segmentOffY = percent * game.tileSize * (dest.y - src.y);
                         u.xoff = srcOffX + segmentOffX;
                         u.yoff = srcOffY + segmentOffY;
                         --also maybe change the orientation of the movement sprite if we're doing that                        
@@ -138,8 +138,19 @@ Battle = function(mapfile)
         elseif (battle.state == "MOVING") then
             --skip and cancel inputs during the walk go here
         elseif (battle.state == "ACTION") then
-            if battle.input_select() then
-                battle.state = "MAINPHASE";
+            if controlMode == "MOUSE" then
+                battle.actionMenu.setCursorWithMouse({factor=1,xoff=0,yoff=0});
+                if battle.input_select() then
+                    battle.actionMenu.executeCurrentOption();
+                end
+            else
+                if battle.input_select() then
+                    battle.actionMenu.executeCurrentOption();
+                elseif pressedThisFrame["up"] then
+                    battle.actionMenu.moveCursor(-1);
+                elseif pressedThisFrame["down"] then
+                    battle.actionMenu.moveCursor(1);
+                end
             end
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
@@ -259,21 +270,21 @@ Battle = function(mapfile)
             end
         elseif controlMode == "MOUSE" then
             local mx,my = love.mouse.getPosition();
-            battle.selectorPos.x = math.floor(mx/tileSize) + 1;
-            battle.selectorPos.y = math.floor(my/tileSize) + 1;
+            battle.selectorPos.x = math.floor(mx/game.tileSize) + 1;
+            battle.selectorPos.y = math.floor(my/game.tileSize) + 1;
         end
     end
-    battle.input_detail = function()
+    battle.input_detail = function(ignoreBounds)
         local inbounds = battle.selectorInBounds();
         local mouseinput = pressedThisFrame.mouse2;
         local otherinput = pressedThisFrame.inspect;
-        return inbounds and (mouseinput or otherinput);
+        return (ignoreBounds or inbounds) and (mouseinput or otherinput);
     end
-    battle.input_select = function()
+    battle.input_select = function(ignoreBounds)
         local inbounds = battle.selectorInBounds();
         local mouseinput = pressedThisFrame.mouse1;
         local otherinput = pressedThisFrame.action;
-        return inbounds and (mouseinput or otherinput);
+        return (ignoreBounds or inbounds) and (mouseinput or otherinput);
     end
     battle.input_cancel = function()
         local mouseinput = false;

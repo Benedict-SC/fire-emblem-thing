@@ -30,6 +30,7 @@ require("utilities.util");
 require("utilities.async");
 require("utilities.input");
 require("utilities.path");
+require("utilities.canvas");
 require("weapons");
 require("items");
 require("map");

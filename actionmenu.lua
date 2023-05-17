@@ -1,10 +1,14 @@
-actionMenuImg = love.graphics.newImage("assets/img/actionmenu.png");
+require("menubox");
+actionMenuImg = love.graphics.newImage("assets/img/sliceablemenu.png");
+actionMenuCursor = love.graphics.newImage("assets/img/actionmenu_cursor.png");
 actionMenuWidth = actionMenuImg:getWidth();
-actionMenuOptionHeight = 20;
-actionMenuFont = love.graphics.newFont("assets/font/arial.ttf", 18);
+actionMenuOptionHeight = 23;
+actionMenuFont = love.graphics.newFont("assets/font/arial.ttf", 17);
 ActionMenu = function(unit)
     local am = {};
     am.img = actionMenuImg;
+    am.box = MenuBox(actionMenuImg,10);
+    am.cursorPosition = 0; --0 is no draw
     am.options = Array();
     am.unit = unit;
     --let's populate the options
@@ -21,7 +25,9 @@ ActionMenu = function(unit)
     end
     if anyHittable then
         local attackOption = {name="Attack"};
-
+        attackOption.onPick = function()
+            game.battle.state = "MAINPHASE";
+        end
         am.options.push(attackOption);
     end
     --TRADE
@@ -33,7 +39,7 @@ ActionMenu = function(unit)
         local itemOption = {name="Item"};
         itemOption.onPick = function()
             --open up the inventory screen and go to inventory state
-        game.battle.state = "MAINPHASE"; --TODO: inventory stuff
+            game.battle.state = "MAINPHASE"; --TODO: inventory stuff
         end
         am.options.push(itemOption);
     end
@@ -45,20 +51,27 @@ ActionMenu = function(unit)
     end
     am.options.push(waitOption);
 
+    am.executeCurrentOption = function()
+        if am.cursorPosition > 0 then
+            local opt = am.options[am.cursorPosition];
+            opt.onPick();
+        end
+    end
+
     --[[mapzoom should be an object:
         factor=number
         xoff=number
         yoff=number
         ]]
     am.getBounds = function(mapzoom)
-        if not mapzoom then mapzoom = 1; end
-        local adjustedTileSize = tileSize * mapzoom.factor;
+        if not mapzoom then mapzoom = {factor=1,xoff=0,yoff=0}; end
+        local adjustedTileSize = game.tileSize * mapzoom.factor;
         local rightEdge = math.floor((am.unit.x*adjustedTileSize) + 0.5) - mapzoom.xoff;
         local bottomEdge = math.floor((am.unit.y*adjustedTileSize) + 0.5) - mapzoom.yoff;
         local leftEdge = rightEdge - math.floor(adjustedTileSize + 0.5);
         local topEdge = bottomEdge - math.floor(adjustedTileSize + 0.5);
 
-        local height = actionMenuImg:getHeight() + (am.options.size * actionMenuOptionHeight); 
+        local height = (am.box.bh*2) + ((am.options.size) * actionMenuOptionHeight); 
 
         local x = rightEdge;
         if rightEdge + actionMenuWidth > gamewidth then
@@ -71,13 +84,47 @@ ActionMenu = function(unit)
         end
         return {x=x,y=y,w=actionMenuWidth,h=height};
     end
+    am.configureSize = function()
+        local bounds = am.getBounds();
+        am.box.resize(bounds.w,bounds.h);
+    end
+    am.configureSize(); --call once on init
+    
     am.render = function(mapzoom)
         love.graphics.setFont(actionMenuFont);
         local bounds = am.getBounds(mapzoom);
-        love.graphics.draw(am.img,bounds.x,bounds.y,0,1,bounds.h/am.img:getHeight());
-        for i=1,#am.options,1 do
-            love.graphics.print(am.options[i].name,bounds.x+11,bounds.y+8 + (28*(i-1)));
+        am.box.draw(bounds.x,bounds.y);
+        --love.graphics.draw(am.img,bounds.x,bounds.y,0,1,bounds.h/am.img:getHeight());
+        if am.cursorPosition ~= 0 then
+            love.graphics.draw(actionMenuCursor,bounds.x,bounds.y + (actionMenuOptionHeight * (am.cursorPosition-1)) + am.box.bh);
         end
+        for i=1,#am.options,1 do
+            love.graphics.print(am.options[i].name,bounds.x+am.box.bw+2,bounds.y+am.box.bh+1 + (actionMenuOptionHeight*(i-1)));
+        end
+    end
+    am.moveCursor = function(dir)
+        am.cursorPosition = am.cursorPosition + dir;
+        if am.cursorPosition < 1 then am.cursorPosition = am.options.size; end
+        if am.cursorPosition > am.options.size then am.cursorPosition = 1; end
+    end
+    am.setCursorWithMouse = function(mapzoom)
+        local bounds = am.getBounds(mapzoom);
+        local mx,my = love.mouse.getPosition();
+        local x = mx - bounds.x;
+        if x < am.box.bw or x > am.box.xoffs[3] then --if we're not 
+            am.cursorPosition = 0;
+            DEBUG_TEXT = "cursor position out of x bounds";
+            return;
+        end
+        local y = my - bounds.y;
+        local idx = math.ceil((y-am.box.bh) / actionMenuOptionHeight);
+        if idx <= 0 or idx > am.options.size then
+            am.cursorPosition = 0;
+            DEBUG_TEXT = "cursor position out of y bounds";
+            return;
+        end
+        am.cursorPosition = idx;
+        DEBUG_TEXT = "cursor position " .. idx;
     end
     am.update = function()
 
