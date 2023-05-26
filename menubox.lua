@@ -4,11 +4,11 @@ MenuBox = function(blueprintImg,borderW,borderH)
     mb.bh = borderH or borderW; --you can just pass one argument if the gutters are the same
     mb.source = blueprintImg;
         --initial draw logic
-    local w = mb.source:getWidth();
-    local h = mb.source:getHeight();
+    mb.w = mb.source:getWidth();
+    mb.h = mb.source:getHeight();
     --set the internal draw sizes
-    mb.midW = w - (2*mb.bw);
-    mb.midH = h - (2*mb.bh);
+    mb.midW = mb.w - (2*mb.bw);
+    mb.midH = mb.h - (2*mb.bh);
     mb.xoffs = {0,mb.bw,mb.bw+mb.midW};
     mb.yoffs = {0,mb.bh,mb.bh+mb.midH};
     --initialize the panels
@@ -65,6 +65,8 @@ MenuBox = function(blueprintImg,borderW,borderH)
         mb.yoffs = {0,mb.bh,h-mb.bh};
         mb.adjustedMidW = mb.xoffs[3] - mb.xoffs[2];
         mb.adjustedMidH = mb.yoffs[3] - mb.yoffs[2];
+        mb.w = w;
+        mb.h = h;
     end
     return mb;
 end

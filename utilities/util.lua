@@ -78,6 +78,12 @@ arrayify = function(bareArray)
 		end
 		return out;
 	end
+	bareArray.sorted = function(comparator) 
+		local out = Array();
+		out = out.concatenate(bareArray);
+		table.sort(out,comparator);
+		return out;
+	end
 	bareArray.oneDimensionDown = function()
 		local newArray = Array();
 		for i=1,#bareArray,1 do

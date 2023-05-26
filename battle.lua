@@ -1,6 +1,6 @@
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, TARGET, COMBAT
+    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, COMBATPREVIEW, TARGET, COMBAT
     battle.map = Map(mapfile);
     battle.selector = love.graphics.newImage("assets/img/selector.png");
     battle.selectorPos = {x=1,y=1};
@@ -13,13 +13,15 @@ Battle = function(mapfile)
             end
         end
         battle.map.renderUnits();
-        if battle.state == "MAINPHASE" or battle.state == "PATHING" then
+        if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" then
             if (battle.selectorPos.x >= 1 and battle.selectorPos.y >= 1) then
                 love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize)
             end
         end
-        if battle.state == "ACTION" then
-            battle.actionMenu.render({factor=1,xoff=0,yoff=0});
+        if battle.state == "ACTION" or battle.state == "PICKWEAPON" then
+            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu};
+            local menuToRender = menus[battle.state];
+            menuToRender.render({factor=1,xoff=0,yoff=0});
         end
     end
     battle.update = function()
@@ -35,40 +37,7 @@ Battle = function(mapfile)
             elseif(battle.input_select()) then --We've clicked on a specific map square to take some action on it
                 local occ = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
                 if occ --[[and not occ.movedThisTurn]] then --we've clicked a unit, so we're going to get its range set up and change states to the PATHING state.
-                    local nodes = battle.map.nodes(occ); --get the navigation nodes
-                    local startNode = nodes[battle.selectorPos.y][battle.selectorPos.x];
-                    local nodes1D = nodes.oneDimensionDown();
-                    local nodelist = dijkstra(startNode,occ.mov); --populate the navigation nodes with costs and get the subset of nodes that are considered in-range
-                    for i=1,#nodelist,1 do --for all those nodes, turn on the valid-move-option overlay
-                        local node = nodelist[i];
-                        node.marked = true; --mark it so we can subtract it to get out-of-range nodes;
-                        battle.map.cells[node.y][node.x].moveOn = true;
-                    end
-                    --now let's calculate attack ranges
-                    local ranges = occ.getRangeSpan();
-                    local unmarked = nodes1D.filter(function(x) return not (x.marked) end); --get just the nodes out of range
-                    for i=1,#ranges,1 do
-                        for j=1,#unmarked,1 do --for each attack range, have each out-of-move-range check if any of the in-move-range spaces are within that attack range. assume attack ranges are commutative and not blocked by walls. TODO: revise this if that assumption changes
-                            local target = unmarked[j];
-                            local nodesWithoutFriends = nodelist.filter(function(x) 
-                                local rangeOcc = battle.map.cellFromNode(x).occupant;
-                                return rangeOcc == nil or rangeOcc == occ;
-                            end);
-                            local manhattanNeighbors = nodesWithoutFriends.filter(function(x) 
-                                return x.manhattanDistance(target) == ranges[i];
-                            end);
-                            if manhattanNeighbors.size > 0 then 
-                                unmarked[j].hittable = true;
-                            end
-                        end
-                    end
-                    unmarked.forEach(function(x) --turn on the attack range overlays
-                        if x.hittable then
-                            battle.map.cells[x.y][x.x].hitOn = true;
-                        end
-                    end);
-                    battle.state = "PATHING";
-                    battle.initMovement(nodes,startNode);
+                    battle.pathfind(occ);
                 end
             end
         elseif (battle.state == "PATHING") then
@@ -81,20 +50,26 @@ Battle = function(mapfile)
                 if (not node.hittable) and (not node.marked) then
                     --do nothing- out of range, invalid input
                 elseif cell.occupant == battle.moveUnit then 
-                    --you're not moving this turn- just go to the action state immediately
-                elseif cell.occupant and not cell.occupant.friendly and node.hittable then --you're trying to attack an enemy
+                    --that's you- you're not moving, go straight to the action state.
+                    battle.actionMenu = ActionMenu(battle.moveUnit);
+                    battle.originalCoords = {y=battle.moveUnit.y,x=battle.moveUnit.x};
+                    battle.resetPathing();
+                    battle.state = "ACTION"; --TODO: ACTION
+                elseif node.hittable and not cell.occupant then
+                    --that's not a valid movement target
+                elseif node.hittable and cell.occupant and not cell.occupant.friendly then --you're trying to attack an enemy
                     --check if the terminus of the path arrow is in range of the occupant
                     --if so, move there, and when done moving there, transition straight to combat preview instead of action
                     --if not, find any marked nodes in range of the target, and select the lowest CSF to move to before transitioning
+                elseif node.hittable and cell.occupant then --occupant is friendly
+                    --either do all that stuff from the previous step but go to heal instead if heal is your only 1-range option
+                    --otherwise invalid input
                 elseif cell.occupant and cell.occupant.friendly then 
                     --whoops, that's just a friend- it'll show up in your movement range but don't try and move there. invalid input.
-                elseif node.hittable and cell.occupant then
-                    --transition straight to the attack menu
-                elseif node.hittable and not cell.occupant then
-                    --that's not a valid movement target
                 else --you're moving to an empty square. 
                     battle.clearOverlays();
                     battle.moveUnit.walkIndex = 1;
+                    battle.originalCoords = {y=battle.moveUnit.y,x=battle.moveUnit.x};
                     local segFunc = function(percent) 
                         local u = battle.moveUnit;
                         local origin = battle.movePath[1];
@@ -113,8 +88,7 @@ Battle = function(mapfile)
                         local u = battle.moveUnit;
                         u.walkIndex = u.walkIndex + 1;
                         if u.walkIndex == #battle.movePath then
-                            battle.map.moveUnitFromTo(battle.movePath[1].x,
-                                                battle.movePath[1].y,
+                            battle.map.moveUnitTo(u,
                                                 battle.movePath[#battle.movePath].x,
                                                 battle.movePath[#battle.movePath].y);
                             u.xoff = 0;
@@ -137,21 +111,37 @@ Battle = function(mapfile)
             end
         elseif (battle.state == "MOVING") then
             --skip and cancel inputs during the walk go here
-        elseif (battle.state == "ACTION") then
-            if controlMode == "MOUSE" then
-                battle.actionMenu.setCursorWithMouse({factor=1,xoff=0,yoff=0});
-                if battle.input_select() then
-                    battle.actionMenu.executeCurrentOption();
+        elseif (battle.state == "ACTION") or (battle.state == "PICKWEAPON") then
+            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu};
+            local menuToControl = menus[battle.state];
+            if battle.input_cancel() then
+                if battle.state == "PICKWEAPON" then 
+                    battle.state = "ACTION"; 
+                elseif battle.state == "ACTION" then
+                    battle.map.moveUnitTo(battle.actionMenu.unit,
+                                            battle.originalCoords.x,
+                                            battle.originalCoords.y);
+                    battle.pathfind(battle.actionMenu.unit);
                 end
             else
-                if battle.input_select() then
-                    battle.actionMenu.executeCurrentOption();
-                elseif pressedThisFrame["up"] then
-                    battle.actionMenu.moveCursor(-1);
-                elseif pressedThisFrame["down"] then
-                    battle.actionMenu.moveCursor(1);
+                if controlMode == "MOUSE" then
+                    menuToControl.setCursorWithMouse({factor=1,xoff=0,yoff=0});
+                    if battle.input_select() then
+                        menuToControl.executeCurrentOption();
+                    end
+                else
+                    if battle.input_select() then
+                        menuToControl.executeCurrentOption();
+                    elseif pressedThisFrame["up"] then
+                        menuToControl.moveCursor(-1);
+                    elseif pressedThisFrame["down"] then
+                        menuToControl.moveCursor(1);
+                    end
                 end
             end
+        elseif (battle.state == "COMBATPREVIEW") then
+            --special selector positioning
+            battle.updateTargetingSelector();
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
         end
@@ -166,6 +156,42 @@ Battle = function(mapfile)
         battle.moveUnit = nil;
     end
     battle.resetPathing();
+    battle.pathfind = function(occ)
+        local nodes = battle.map.nodes(occ); --get the navigation nodes
+        local startNode = nodes[occ.y][occ.x];
+        local nodes1D = nodes.oneDimensionDown();
+        local nodelist = dijkstra(startNode,occ.mov); --populate the navigation nodes with costs and get the subset of nodes that are considered in-range
+        for i=1,#nodelist,1 do --for all those nodes, turn on the valid-move-option overlay
+            local node = nodelist[i];
+            node.marked = true; --mark it so we can subtract it to get out-of-range nodes;
+            battle.map.cells[node.y][node.x].moveOn = true;
+        end
+        --now let's calculate attack ranges
+        local ranges = occ.getRangeSpan();
+        local unmarked = nodes1D.filter(function(x) return not (x.marked) end); --get just the nodes out of range
+        for i=1,#ranges,1 do
+            for j=1,#unmarked,1 do --for each attack range, have each out-of-move-range check if any of the in-move-range spaces are within that attack range. assume attack ranges are commutative and not blocked by walls. TODO: revise this if that assumption changes
+                local target = unmarked[j];
+                local nodesWithoutFriends = nodelist.filter(function(x) 
+                    local rangeOcc = battle.map.cellFromNode(x).occupant;
+                    return rangeOcc == nil or rangeOcc == occ;
+                end);
+                local manhattanNeighbors = nodesWithoutFriends.filter(function(x) 
+                    return x.manhattanDistance(target) == ranges[i];
+                end);
+                if manhattanNeighbors.size > 0 then 
+                    unmarked[j].hittable = true;
+                end
+            end
+        end
+        unmarked.forEach(function(x) --turn on the attack range overlays
+            if x.hittable then
+                battle.map.cells[x.y][x.x].hitOn = true;
+            end
+        end);
+        battle.state = "PATHING";
+        battle.initMovement(nodes,startNode);
+    end
     battle.initMovement = function(nodes,startNode)
         battle.moveUnit = battle.map.cells[startNode.y][startNode.x].occupant;
         battle.moveBudget = battle.moveUnit.mov;
@@ -274,6 +300,64 @@ Battle = function(mapfile)
             battle.selectorPos.y = math.floor(my/game.tileSize) + 1;
         end
     end
+    battle.updateTargetingSelector = function()
+        if controlMode == "MOUSE" then
+            local mx,my = love.mouse.getPosition();
+            local x = math.floor(mx/game.tileSize) + 1;
+            local y = math.floor(my/game.tileSize) + 1;
+            local matchingUnits = battle.horizontalTargetList.filter(function(u) return u.x == x and u.y == y; end);
+            if matchingUnits.size > 0 then
+                local unit = matchingUnits[1];
+                battle.horizontalTargetIndex = battle.horizontalTargetList.indexOf(unit);
+                battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
+                battle.selectorPos.x = x;
+                battle.selectorPos.y = y;
+            end
+        elseif controlMode == "KEYBOARD" then
+            if pressedThisFrame["right"] then
+                battle.horizontalTargetIndex = battle.horizontalTargetIndex + 1;
+                if battle.horizontalTargetIndex > battle.horizontalTargetList.size then
+                    battle.horizontalTargetIndex = 1;
+                end
+                local unit = battle.horizontalTargetList[battle.horizontalTargetIndex];
+                battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
+                battle.selectorPos.x = unit.x;
+                battle.selectorPos.y = unit.y;
+            elseif pressedThisFrame["left"] then
+                battle.horizontalTargetIndex = battle.horizontalTargetIndex - 1;
+                if battle.horizontalTargetIndex < 1 then
+                    battle.horizontalTargetIndex = battle.horizontalTargetList.size;
+                end
+                local unit = battle.horizontalTargetList[battle.horizontalTargetIndex];
+                battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
+                battle.selectorPos.x = unit.x;
+                battle.selectorPos.y = unit.y;
+            elseif pressedThisFrame["down"] then
+                battle.verticalTargetIndex = battle.verticalTargetIndex + 1;
+                if battle.verticalTargetIndex > battle.verticalTargetList.size then
+                    battle.verticalTargetIndex = 1;
+                end
+                local unit = battle.verticalTargetList[battle.verticalTargetIndex];
+                battle.horizontalTargetIndex = battle.horizontalTargetList.indexOf(unit);
+                battle.selectorPos.x = unit.x;
+                battle.selectorPos.y = unit.y;
+            elseif pressedThisFrame["up"] then
+                battle.verticalTargetIndex = battle.verticalTargetIndex - 1;
+                if battle.verticalTargetIndex < 1 then
+                    battle.verticalTargetIndex = battle.verticalTargetList.size;
+                end
+                
+                local unit = battle.verticalTargetList[battle.verticalTargetIndex];
+                if not unit then
+                    error("bad index: " .. battle.verticalTargetIndex);
+                end
+                battle.horizontalTargetIndex = battle.horizontalTargetList.indexOf(unit);
+                battle.selectorPos.x = unit.x;
+                battle.selectorPos.y = unit.y;
+            end
+        end
+        
+    end
     battle.input_detail = function(ignoreBounds)
         local inbounds = battle.selectorInBounds();
         local mouseinput = pressedThisFrame.mouse2;
@@ -288,7 +372,7 @@ Battle = function(mapfile)
     end
     battle.input_cancel = function()
         local mouseinput = false;
-        if(battle.state == "PATHING") then
+        if(battle.state == "PATHING" or battle.state == "ACTION" or battle.state == "PICKWEAPON") then
             mouseinput = pressedThisFrame.mouse2;
         end
         local otherinput = pressedThisFrame.cancel;

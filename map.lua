@@ -153,12 +153,11 @@ Map = function(filename)
     map.cellFromNode = function(node)
         return map.cells[node.y][node.x];
     end
-    map.moveUnitFromTo = function(srcX,srcY,destX,destY) 
-        local unit = map.cells[srcY][srcX].occupant;
+    map.moveUnitTo = function(unit,destX,destY) 
+        map.cells[unit.y][unit.x].occupant = nil;
         unit.x = destX;
         unit.y = destY;
         map.cells[destY][destX].occupant = unit;
-        map.cells[srcY][srcX].occupant = nil;
     end
     map.highlightAttackRange = function(unit,weapon)
         local ranges = Array();

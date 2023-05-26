@@ -1,7 +1,6 @@
-require("menubox");
+require("battle-ui.pickweapon");
 actionMenuImg = love.graphics.newImage("assets/img/sliceablemenu.png");
 actionMenuCursor = love.graphics.newImage("assets/img/actionmenu_cursor.png");
-actionMenuWidth = actionMenuImg:getWidth();
 actionMenuOptionHeight = 23;
 actionMenuFont = love.graphics.newFont("assets/font/arial.ttf", 17);
 ActionMenu = function(unit)
@@ -14,10 +13,10 @@ ActionMenu = function(unit)
     --let's populate the options
     --ATTACK
     local attackranges = unit.getWeaponRanges();
-    local cellsToCheckForAttackables = game.battle.map.getCellsInRanges(unit.x,unit.y,attackranges);
+    am.cellsToCheckForAttackables = game.battle.map.getCellsInRanges(unit.x,unit.y,attackranges);
     local anyHittable = false;
-    for i=1,#cellsToCheckForAttackables,1 do
-        local c = cellsToCheckForAttackables[i];
+    for i=1,#am.cellsToCheckForAttackables,1 do
+        local c = am.cellsToCheckForAttackables[i];
         if c.occupant and (c.occupant.friendly ~= unit.friendly) then
             anyHittable = true;
             break;
@@ -26,7 +25,8 @@ ActionMenu = function(unit)
     if anyHittable then
         local attackOption = {name="Attack"};
         attackOption.onPick = function()
-            game.battle.state = "MAINPHASE";
+            game.battle.pickWeaponMenu = PickWeapon(am.unit);
+            game.battle.state = "PICKWEAPON";
         end
         am.options.push(attackOption);
     end
@@ -74,15 +74,15 @@ ActionMenu = function(unit)
         local height = (am.box.bh*2) + ((am.options.size) * actionMenuOptionHeight); 
 
         local x = rightEdge;
-        if rightEdge + actionMenuWidth > gamewidth then
-            x = leftEdge - actionMenuWidth;
+        if rightEdge + am.box.w > gamewidth then
+            x = leftEdge - am.box.w;
         end
 
         local y = topEdge;
         if topEdge + height > gameheight then
             y = gameheight - height;
         end
-        return {x=x,y=y,w=actionMenuWidth,h=height};
+        return {x=x,y=y,w=am.box.w,h=height};
     end
     am.configureSize = function()
         local bounds = am.getBounds();
@@ -106,6 +106,7 @@ ActionMenu = function(unit)
         am.cursorPosition = am.cursorPosition + dir;
         if am.cursorPosition < 1 then am.cursorPosition = am.options.size; end
         if am.cursorPosition > am.options.size then am.cursorPosition = 1; end
+        am.toggleAttackRanges();
     end
     am.setCursorWithMouse = function(mapzoom)
         local bounds = am.getBounds(mapzoom);
@@ -113,18 +114,27 @@ ActionMenu = function(unit)
         local x = mx - bounds.x;
         if x < am.box.bw or x > am.box.xoffs[3] then --if we're not 
             am.cursorPosition = 0;
-            DEBUG_TEXT = "cursor position out of x bounds";
+            am.toggleAttackRanges();
             return;
         end
         local y = my - bounds.y;
         local idx = math.ceil((y-am.box.bh) / actionMenuOptionHeight);
         if idx <= 0 or idx > am.options.size then
             am.cursorPosition = 0;
-            DEBUG_TEXT = "cursor position out of y bounds";
+            am.toggleAttackRanges();
             return;
         end
         am.cursorPosition = idx;
-        DEBUG_TEXT = "cursor position " .. idx;
+        am.toggleAttackRanges();
+    end
+    am.toggleAttackRanges = function()
+        local show = am.cursorPosition ~= 0 and am.options[am.cursorPosition].name == "Attack";
+        DEBUG_TEXT = "show is " .. (show and "true" or "false");
+        --show = show and am.options[am.cursorPosition].name == "Staff"; --or something
+        game.battle.clearOverlays();
+        if show then
+            am.cellsToCheckForAttackables.forEach(function(x) x.hitOn = true; end);
+        end
     end
     am.update = function()
 

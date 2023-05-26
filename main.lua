@@ -37,9 +37,10 @@ require("map");
 require("unitclass")
 require("templateunit");
 require("activeunit");
+require("menubox");
 require("battle");
-require("actionmenu");
-require("statspage");
+require("battle-ui.actionmenu");
+require("battle-ui.statspage");
 require("game");
 game = Game();
 function love.draw()
