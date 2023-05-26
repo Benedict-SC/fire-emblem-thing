@@ -4,7 +4,7 @@ path.bits = {love.graphics.newImage("assets/img/path-start.png"),
             love.graphics.newImage("assets/img/path-bend.png"),
             love.graphics.newImage("assets/img/path-cap.png"),
             love.graphics.newImage("assets/img/path-any.png")};
-path.renderPathBit = function(movepath,idx)
+path.renderPathBit = function(movepath,idx,camera)
     if (#movepath <= 1) then return; end
     local rotations = 0;
     local bitIdx;
@@ -101,6 +101,8 @@ path.renderPathBit = function(movepath,idx)
     if(rotations == 3) then 
         yoff = game.tileSize;
     end
-
+    love.graphics.pushCanvas(game.battle.map.drawCanvas);
     love.graphics.draw(path.bits[bitIdx],(movepath[idx].x - 1)*game.tileSize+xoff,(movepath[idx].y - 1)*game.tileSize+yoff,radians);
+    love.graphics.popCanvas();
+    love.graphics.draw(game.battle.map.drawCanvas,-camera.xoff,-camera.yoff,0,camera.factor,camera.factor);
 end

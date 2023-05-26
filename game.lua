@@ -2,9 +2,11 @@
 Game = function()
     local game = {};
     game.tileSize = 50;
-    game.battle = Battle("assets/json/testmap.json");
-    game.statspage = StatsPage();
-    game.state = "BATTLE"
+    game.init = function()
+        game.battle = Battle("assets/json/testmap.json");
+        game.statspage = StatsPage();
+        game.state = "BATTLE"
+    end
     game.render = function()
         if game.state == "BATTLE" then
             game.battle.render();

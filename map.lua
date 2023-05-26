@@ -16,6 +16,8 @@ Map = function(filename)
     map.playerUnits = Array();
     map.otherUnits = Array();
 
+    map.drawCanvas = nil;--love.graphics.newCanvas(); --we need to wait until we have bounds
+
     local jsonstring = love.filesystem.read(filename);
     local data = json.decode(jsonstring);
 
@@ -27,6 +29,8 @@ Map = function(filename)
         end
         map.cells.push(row);
     end
+
+    map.drawCanvas = love.graphics.newCanvas(#map.cells[1] * game.tileSize,#map.cells * game.tileSize);
 
     --local combinedunits = arrayify(data.enemyUnits);
     --combinedunits.concatenate(data.playerUnits);
@@ -87,7 +91,8 @@ Map = function(filename)
         map.units.push(unit);
         map.playerUnits.push(unit);
     end
-    map.renderTerrain = function()
+    map.renderTerrain = function(camera)
+        love.graphics.pushCanvas(map.drawCanvas);
         for i=1,#(map.cells),1 do
             for j=1,#(map.cells[1]),1 do
                 local cell = map.cells[i][j]
@@ -104,8 +109,11 @@ Map = function(filename)
             local unit = map.units[i];
             love.graphics.draw
         end]]--
+        love.graphics.popCanvas();
+        love.graphics.draw(map.drawCanvas,-camera.xoff,-camera.yoff,0,camera.factor,camera.factor);
     end
-    map.renderUnits = function()
+    map.renderUnits = function(camera)
+        love.graphics.pushCanvas(map.drawCanvas);
         for i=1,#(map.cells),1 do
             for j=1,#(map.cells[1]),1 do
                 local cell = map.cells[i][j];
@@ -115,6 +123,8 @@ Map = function(filename)
                 end
             end
         end
+        love.graphics.popCanvas();
+        love.graphics.draw(map.drawCanvas,-camera.xoff,-camera.yoff,0,camera.factor,camera.factor);
     end
     map.costToEnter = function(unit,cell) 
         local emptySpaceCost = terrain[cell.terrainType].costToEnter(unit.class.movementType());

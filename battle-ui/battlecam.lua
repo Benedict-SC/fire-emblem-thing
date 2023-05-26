@@ -1,7 +1,7 @@
 battleZoomLevels = {0.25,0.5,0.75,1.0,1.2,1.5,2.0}
 BattleCam = function()
     local bc = {};
-    bc._zoomIndex = 4;
+    bc._zoomIndex = 3;
     bc.factor = battleZoomLevels[bc._zoomIndex];
     bc.zoom = function(direction)
         bc._zoomIndex = bc._zoomIndex + direction;

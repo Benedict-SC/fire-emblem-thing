@@ -5,14 +5,15 @@ Battle = function(mapfile)
     battle.selector = love.graphics.newImage("assets/img/selector.png");
     battle.selectorPos = {x=1,y=1};
     battle.units = battle.map.units;
+    battle.camera = BattleCam();
     battle.render = function()
-        battle.map.renderTerrain();
+        battle.map.renderTerrain(battle.camera);
         if battle.state == "PATHING" or battle.state == "MOVING" then
             for i=1,#(battle.movePath),1 do
-                path.renderPathBit(battle.movePath,i);
+                path.renderPathBit(battle.movePath,i,battle.camera);
             end
         end
-        battle.map.renderUnits();
+        battle.map.renderUnits(battle.camera);
         if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" then
             if (battle.selectorPos.x >= 1 and battle.selectorPos.y >= 1) then
                 love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize)

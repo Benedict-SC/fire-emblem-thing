@@ -39,10 +39,12 @@ require("templateunit");
 require("activeunit");
 require("menubox");
 require("battle");
+require("battle-ui.battlecam");
 require("battle-ui.actionmenu");
 require("battle-ui.statspage");
 require("game");
 game = Game();
+game.init();
 function love.draw()
     --first: framerate limit
 	local start = love.timer.getTime();
