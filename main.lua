@@ -48,6 +48,7 @@ game.init();
 function love.draw()
     --first: framerate limit
 	local start = love.timer.getTime();
+	love.graphics.setColor(1,1,1);
     input.update();
 	async.update();
     game.update();

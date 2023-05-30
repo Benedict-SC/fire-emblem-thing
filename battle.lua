@@ -3,7 +3,7 @@ Battle = function(mapfile)
     battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, COMBATPREVIEW, TARGET, COMBAT
     battle.map = Map(mapfile);
     battle.selector = love.graphics.newImage("assets/img/selector.png");
-    battle.selectorPos = {x=1,y=1};
+    battle.selectorPos = {x=5,y=5};
     battle.units = battle.map.units;
     battle.camera = BattleCam();
     battle.render = function()
@@ -44,6 +44,7 @@ Battle = function(mapfile)
                 if occ --[[and not occ.movedThisTurn]] then --we've clicked a unit, so we're going to get its range set up and change states to the PATHING state.
                     battle.pathfind(occ);
                 end
+                battle.recenterOnSelector();
             end
         elseif (battle.state == "PATHING") then
             battle.updateSelectorPosition();
@@ -299,8 +300,11 @@ Battle = function(mapfile)
                     if battle.selectorPos.x < 1 then battle.selectorPos.x = 1; end
                 end
             end
+            battle.recenterOnSelector();
         elseif controlMode == "MOUSE" then
             local mx,my = love.mouse.getPosition();
+            mx = mx + battle.camera.xoff;
+            my = my + battle.camera.yoff;
             mx = math.floor(mx / battle.camera.factor + 0.5);
             my = math.floor(my / battle.camera.factor + 0.5);
             battle.selectorPos.x = math.floor(mx/game.tileSize) + 1;
@@ -310,6 +314,8 @@ Battle = function(mapfile)
     battle.updateTargetingSelector = function()
         if controlMode == "MOUSE" then
             local mx,my = love.mouse.getPosition();
+            mx = mx + battle.camera.xoff;
+            my = my + battle.camera.yoff;
             mx = math.floor(mx / battle.camera.factor + 0.5);
             my = math.floor(my / battle.camera.factor + 0.5);
             local x = math.floor(mx/game.tileSize) + 1;
@@ -321,6 +327,7 @@ Battle = function(mapfile)
                 battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
                 battle.selectorPos.x = x;
                 battle.selectorPos.y = y;
+                battle.camera.recenter(battle,x,y);
             end
         elseif controlMode == "KEYBOARD" then
             if pressedThisFrame["right"] then
@@ -367,11 +374,16 @@ Battle = function(mapfile)
         end
         
     end
+    battle.recenterOnSelector = function()
+        battle.camera.recenter(battle,battle.selectorPos.x,battle.selectorPos.y);
+    end
     battle.processZoomInput = function()
         if pressedThisFrame["zoomIn"] then
             battle.camera.zoom(1);
+            battle.recenterOnSelector();
         elseif pressedThisFrame["zoomOut"] then
             battle.camera.zoom(-1);
+            battle.recenterOnSelector();
         end
     end
     battle.input_detail = function(ignoreBounds)
