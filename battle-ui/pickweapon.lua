@@ -85,8 +85,8 @@ PickWeapon = function(unit)
         end
         return {x=x,y=y,w=pw.box.w,h=height};
     end
-    pw.configureSize = function()
-        local bounds = pw.getBounds();
+    pw.configureSize = function(mapzoom)
+        local bounds = pw.getBounds(mapzoom);
         pw.box.resize(bounds.w,bounds.h);
     end
     pw.box.resize(200,100); --set a fixed width that isn't the base image width

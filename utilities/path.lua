@@ -101,8 +101,5 @@ path.renderPathBit = function(movepath,idx,camera)
     if(rotations == 3) then 
         yoff = game.tileSize;
     end
-    love.graphics.pushCanvas(game.battle.map.drawCanvas);
     love.graphics.draw(path.bits[bitIdx],(movepath[idx].x - 1)*game.tileSize+xoff,(movepath[idx].y - 1)*game.tileSize+yoff,radians);
-    love.graphics.popCanvas();
-    love.graphics.draw(game.battle.map.drawCanvas,-camera.xoff,-camera.yoff,0,camera.factor,camera.factor);
 end

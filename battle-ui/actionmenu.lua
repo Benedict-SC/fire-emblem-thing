@@ -84,8 +84,8 @@ ActionMenu = function(unit)
         end
         return {x=x,y=y,w=am.box.w,h=height};
     end
-    am.configureSize = function()
-        local bounds = am.getBounds();
+    am.configureSize = function(mapzoom)
+        local bounds = am.getBounds(mapzoom);
         am.box.resize(bounds.w,bounds.h);
     end
     am.configureSize(); --call once on init

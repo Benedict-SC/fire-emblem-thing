@@ -7,25 +7,29 @@ Battle = function(mapfile)
     battle.units = battle.map.units;
     battle.camera = BattleCam();
     battle.render = function()
-        battle.map.renderTerrain(battle.camera);
+        love.graphics.pushCanvas(battle.map.drawCanvas);
+        battle.map.renderTerrain();
         if battle.state == "PATHING" or battle.state == "MOVING" then
             for i=1,#(battle.movePath),1 do
-                path.renderPathBit(battle.movePath,i,battle.camera);
+                path.renderPathBit(battle.movePath,i);
             end
         end
-        battle.map.renderUnits(battle.camera);
+        battle.map.renderUnits();
         if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" then
             if (battle.selectorPos.x >= 1 and battle.selectorPos.y >= 1) then
                 love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize)
             end
         end
+        love.graphics.popCanvas();
+        love.graphics.draw(battle.map.drawCanvas,-battle.camera.xoff,-battle.camera.yoff,0,battle.camera.factor,battle.camera.factor);
         if battle.state == "ACTION" or battle.state == "PICKWEAPON" then
             local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu};
             local menuToRender = menus[battle.state];
-            menuToRender.render({factor=1,xoff=0,yoff=0});
+            menuToRender.render(battle.camera);
         end
     end
     battle.update = function()
+        battle.processZoomInput();
         if battle.state == "MAINPHASE" then
             battle.updateSelectorPosition();
             if(battle.input_detail()) then --We want to pull up the stats for some unit on the battlefield
@@ -126,7 +130,7 @@ Battle = function(mapfile)
                 end
             else
                 if controlMode == "MOUSE" then
-                    menuToControl.setCursorWithMouse({factor=1,xoff=0,yoff=0});
+                    menuToControl.setCursorWithMouse(battle.camera);
                     if battle.input_select() then
                         menuToControl.executeCurrentOption();
                     end
@@ -297,6 +301,8 @@ Battle = function(mapfile)
             end
         elseif controlMode == "MOUSE" then
             local mx,my = love.mouse.getPosition();
+            mx = math.floor(mx / battle.camera.factor + 0.5);
+            my = math.floor(my / battle.camera.factor + 0.5);
             battle.selectorPos.x = math.floor(mx/game.tileSize) + 1;
             battle.selectorPos.y = math.floor(my/game.tileSize) + 1;
         end
@@ -304,6 +310,8 @@ Battle = function(mapfile)
     battle.updateTargetingSelector = function()
         if controlMode == "MOUSE" then
             local mx,my = love.mouse.getPosition();
+            mx = math.floor(mx / battle.camera.factor + 0.5);
+            my = math.floor(my / battle.camera.factor + 0.5);
             local x = math.floor(mx/game.tileSize) + 1;
             local y = math.floor(my/game.tileSize) + 1;
             local matchingUnits = battle.horizontalTargetList.filter(function(u) return u.x == x and u.y == y; end);
@@ -358,6 +366,13 @@ Battle = function(mapfile)
             end
         end
         
+    end
+    battle.processZoomInput = function()
+        if pressedThisFrame["zoomIn"] then
+            battle.camera.zoom(1);
+        elseif pressedThisFrame["zoomOut"] then
+            battle.camera.zoom(-1);
+        end
     end
     battle.input_detail = function(ignoreBounds)
         local inbounds = battle.selectorInBounds();

@@ -4,12 +4,13 @@ releasedThisFrame = {up=false,down=false,left=false,right=false,action=false,can
 objectiveArrows = {up=false,down=false,left=false,right=false,c=false,x=false,space=false,enter=false};
 objectiveArrowsPressed = {up=false,down=false,left=false,right=false,c=false,x=false,space=false,enter=false};
 
-defaultKeyControls = {up={"up","w"},down={"down","s"},left={"left","a"},right={"right","d"},action={"space"},cancel={"x"},inspect={"tab"},menu={"return"},leftTab={"q"},rightTab={"e"}};
-keyControls = {up={"up","w"},down={"down","s"},left={"left","a"},right={"right","d"},action={"space"},cancel={"x"},inspect={"tab"},menu={"return"},leftTab={"q"},rightTab={"e"}};
-controllerControls = {up={"dpup"},down={"dpdown"},left={"dpleft"},right={"dpright"},action={"a"},cancel={"b"},inspect={"y"},menu={"start"},leftTab={"leftshoulder"},rightTab={"rightshoulder"}}
-checkdowns = {"up","down","left","right","action","cancel","inspect","menu","leftTab","rightTab"};
+defaultKeyControls = {up={"up","w"},down={"down","s"},left={"left","a"},right={"right","d"},action={"space"},cancel={"x"},inspect={"tab"},menu={"return"},leftTab={"q"},rightTab={"e"},zoomIn={"=","kp+"},zoomOut={"-","kp-"}};
+keyControls = {up={"up","w"},down={"down","s"},left={"left","a"},right={"right","d"},action={"space"},cancel={"x"},inspect={"tab"},menu={"return"},leftTab={"q"},rightTab={"e"},zoomIn={"=","kp+"},zoomOut={"-","kp-"}};
+controllerControls = {up={"dpup"},down={"dpdown"},left={"dpleft"},right={"dpright"},action={"a"},cancel={"b"},inspect={"y"},menu={"start"},leftTab={"leftshoulder"},rightTab={"rightshoulder"},zoomIn={},zoomOut={}}
+checkdowns = {"up","down","left","right","action","cancel","inspect","menu","leftTab","rightTab","zoomIn","zoomOut"};
 controlMode = "KEYBOARD";
 activeJoystick = love.joystick.getJoysticks()[1];
+wheelThisFrame = 0;
 
 inputTimestamps = {up=0,down=0,left=0,right=0,action=0,cancel=0,inspect=0,menu=0,leftTab=0,rightTab=0,mouse1=0,mouse2=0};
 turboDelay = 0.0;--0.35; --seconds
@@ -98,8 +99,8 @@ input.checkIfAnyAreDown = function(keytype)
 	return false;
 end
 input.update = function()
-	pressedThisFrame = {up=false,down=false,left=false,right=false,action=false,cancel=false,menu=false,leftTab=false,rightTab=false,mouse1=false,mouse2=false};
-	releasedThisFrame = {up=false,down=false,left=false,right=false,action=false,cancel=false,menu=false,leftTab=false,rightTab=false,mouse1=false,mouse2=false};
+	pressedThisFrame = {up=false,down=false,left=false,right=false,action=false,cancel=false,menu=false,leftTab=false,rightTab=false,mouse1=false,mouse2=false,zoomIn=false,zoomOut=false};
+	releasedThisFrame = {up=false,down=false,left=false,right=false,action=false,cancel=false,menu=false,leftTab=false,rightTab=false,mouse1=false,mouse2=false,zoomIn=false,zoomOut=false};
 	objectiveArrowsPressed = {up=false,down=false,left=false,right=false,c=false,x=false,space=false,enter=false};
     
     for i=1,#checkdowns,1 do
@@ -147,6 +148,14 @@ input.update = function()
             releasedThisFrame.mouse2 = true;
         end
     end
+	if wheelThisFrame ~= 0 then
+		if wheelThisFrame > 0 then
+			pressedThisFrame.zoomIn = true;
+		else
+			pressedThisFrame.zoomOut = true;	
+		end
+	end
+	wheelThisFrame = 0;
 end
 love.textinput = function(text)
 	if game.pronounsMode then
@@ -197,4 +206,7 @@ love.mousepressed = function(x,y,dx,dy)
 end
 love.mousemoved = function(x,y,button,istouch,presses)
     controlMode = "MOUSE";
+end
+love.wheelmoved = function(x,y)
+	wheelThisFrame = y;
 end

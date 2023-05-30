@@ -91,8 +91,7 @@ Map = function(filename)
         map.units.push(unit);
         map.playerUnits.push(unit);
     end
-    map.renderTerrain = function(camera)
-        love.graphics.pushCanvas(map.drawCanvas);
+    map.renderTerrain = function()
         for i=1,#(map.cells),1 do
             for j=1,#(map.cells[1]),1 do
                 local cell = map.cells[i][j]
@@ -109,11 +108,8 @@ Map = function(filename)
             local unit = map.units[i];
             love.graphics.draw
         end]]--
-        love.graphics.popCanvas();
-        love.graphics.draw(map.drawCanvas,-camera.xoff,-camera.yoff,0,camera.factor,camera.factor);
     end
-    map.renderUnits = function(camera)
-        love.graphics.pushCanvas(map.drawCanvas);
+    map.renderUnits = function()
         for i=1,#(map.cells),1 do
             for j=1,#(map.cells[1]),1 do
                 local cell = map.cells[i][j];
@@ -123,8 +119,6 @@ Map = function(filename)
                 end
             end
         end
-        love.graphics.popCanvas();
-        love.graphics.draw(map.drawCanvas,-camera.xoff,-camera.yoff,0,camera.factor,camera.factor);
     end
     map.costToEnter = function(unit,cell) 
         local emptySpaceCost = terrain[cell.terrainType].costToEnter(unit.class.movementType());
