@@ -51,6 +51,7 @@ ActiveUnit = function(unitdata)
         end
     end
     unit.getEquippedWeapon = function()
+        if unit.equipIdx == 0 then return nil; end
         return unit.inventory[unit.equipIdx];
     end
     unit.equipFirstWeapon = function()
