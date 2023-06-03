@@ -148,6 +148,9 @@ Battle = function(mapfile)
         elseif (battle.state == "COMBATPREVIEW") then
             --special selector positioning
             battle.updateTargetingSelector();
+            if battle.input_cancel() then
+                battle.state = "PICKWEAPON";
+            end
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
         end
@@ -400,7 +403,7 @@ Battle = function(mapfile)
     end
     battle.input_cancel = function()
         local mouseinput = false;
-        if(battle.state == "PATHING" or battle.state == "ACTION" or battle.state == "PICKWEAPON") then
+        if(battle.state == "PATHING" or battle.state == "ACTION" or battle.state == "PICKWEAPON" or battle.state == "COMBATPREVIEW") then
             mouseinput = pressedThisFrame.mouse2;
         end
         local otherinput = pressedThisFrame.cancel;

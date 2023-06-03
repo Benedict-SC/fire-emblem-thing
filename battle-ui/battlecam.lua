@@ -1,7 +1,8 @@
-battleZoomLevels = {0.5,0.75,1.0,1.2,1.5}
+--battleZoomLevels = {0.5,0.75,1.0,1.2,1.5}
+battleZoomLevels = {1.0,1.2,1.5}
 BattleCam = function()
     local bc = {};
-    bc._zoomIndex = 3;
+    bc._zoomIndex = 1;
     bc.factor = battleZoomLevels[bc._zoomIndex];
     bc.deadZoneW = gamewidth / 7;
     bc.deadZoneH = gameheight / 7;

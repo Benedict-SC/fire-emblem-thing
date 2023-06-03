@@ -1,13 +1,14 @@
 {
     "tiles":[
-        [1,3,3,3,3,3,3,3,3,3,3,3],
-        [1,1,3,1,1,2,2,3,3,2,2,3],
-        [1,1,1,2,2,2,2,3,2,2,2,2],
-        [3,1,1,1,2,2,2,3,2,2,2,3],
-        [1,1,1,1,1,2,3,3,1,2,2,3],
-        [1,1,2,1,1,2,1,3,3,1,2,2],
-        [3,1,1,1,2,1,1,3,3,3,1,2],
-        [3,3,1,1,1,1,1,1,1,3,3,3]      
+        [1,3,3,3,3,3,3,3,3,3,3,3,3],
+        [1,1,3,1,1,2,2,3,3,2,2,3,3],
+        [1,1,1,2,2,2,2,3,2,2,2,2,2],
+        [3,1,1,1,2,2,2,3,2,2,2,3,2],
+        [1,1,1,1,1,2,3,3,1,2,2,3,3],
+        [1,1,2,1,1,2,1,3,3,1,2,2,3],
+        [3,1,1,1,2,1,1,3,3,3,1,2,2],
+        [3,3,1,1,1,1,1,1,1,3,3,3,2],
+        [3,3,3,3,1,1,1,1,1,1,2,3,3]     
       ],
     "enemyUnits":[
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 3-5","x":3,"y":5,"mov":5,"presetWeapons":["IronLance"]},
@@ -23,6 +24,6 @@
     "playerUnits":[
         {"mapSpriteFile":"assets/img/hero.png","portraitFile":"assets/img/heroport.png","classPreset":"Lord","name":"Protag-san","x":4,"y":7,"mov":7,"presetWeapons":["IronSword"],"presetItems":["Vulnerary"]},
         {"mapSpriteFile":"assets/img/mage.png","portraitFile":"assets/img/heroport.png","classPreset":"Shaman","name":"Edgy Mage","x":3,"y":8,"mov":7,"presetWeapons":["Flux"],"presetItems":["Vulnerary"]},
-        {"mapSpriteFile":"assets/img/archer.png","portraitFile":"assets/img/heroport.png","classPreset":"Archer","name":"Cool Archer","x":5,"y":8,"mov":7,"presetWeapons":["IronBow"],"presetItems":["Vulnerary"]}
+        {"mapSpriteFile":"assets/img/archer.png","portraitFile":"assets/img/archerport.png","classPreset":"Archer","name":"Cool Archer","x":5,"y":8,"mov":7,"presetWeapons":["IronBow"],"presetItems":["Vulnerary"]}
     ]
 }

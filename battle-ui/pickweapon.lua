@@ -7,7 +7,7 @@ PickWeapon = function(unit)
     local pw = {};
     pw.img = actionMenuImg;
     pw.box = MenuBox(pickWeaponImg,10);
-    pw.cursorPosition = 0; --0 is no draw
+    pw.cursorPosition = 1; --0 is no draw
     pw.unit = unit;
     pw.cellsToCheckForAttackables = Array();--game.battle.map.getCellsInRanges(unit.x,unit.y,attackranges);
     

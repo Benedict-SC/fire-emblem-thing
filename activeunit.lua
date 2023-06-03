@@ -20,6 +20,7 @@ ActiveUnit = function(unitdata)
     unit.level = 1;
     unit.exp = 0;
     unit.inventory = Array();
+    unit.equipIdx = 0;
     unit.getRangeSpan = function(discriminatorFunction)
         if not discriminatorFunction then 
             discriminatorFunction = function() 
@@ -42,7 +43,28 @@ ActiveUnit = function(unitdata)
     unit.getWeaponRanges = function()
         return unit.getRangeSpan(function(x) return x.isWeapon end);
     end
-
+    unit.equip = function(idx)
+        local item = unit.inventory[idx];
+        if (item.isWeapon) then
+            --TODO: check if they can actually use that weapon
+            unit.equipIdx = idx;
+        end
+    end
+    unit.getEquippedWeapon = function()
+        return unit.inventory[unit.equipIdx];
+    end
+    unit.equipFirstWeapon = function()
+        local found = false;
+        local i = 1;
+        while (not found) and i <= #unit.inventory do
+            if unit.inventory[i].isWeapon then
+                --TODO: check if they can actually equip that weapon
+                found = true;
+                unit.equipIdx = 1;
+            end
+            i = i+1;
+        end
+    end
     unit.loadSprites = function()
         if unit.mapSpriteFile then
             unit.img = love.graphics.newImage(unit.mapSpriteFile);

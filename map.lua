@@ -58,6 +58,7 @@ Map = function(filename)
             end
         end
         unit.loadSprites();
+        unit.equipFirstWeapon();
         map.cells[unitdata.y][unitdata.x].occupant = unit;
         map.units.push(unit);
         map.enemyUnits.push(unit);
@@ -87,6 +88,7 @@ Map = function(filename)
             end
         end
         unit.loadSprites();
+        unit.equipFirstWeapon();
         map.cells[unitdata.y][unitdata.x].occupant = unit;
         map.units.push(unit);
         map.playerUnits.push(unit);

@@ -35,6 +35,9 @@ StatsPage = function()
             love.graphics.setColor(1,1,1,0.5);
             love.graphics.print("(" .. item.currentUses .. "/" .. item.maxUses .. ")",490,height);
             love.graphics.setColor(1,1,1,1);
+            if sp.unit.equipIdx == i then
+                love.graphics.draw(equipDot,352,height+12);
+            end
         end
 
         love.graphics.setColor(0,0,0);

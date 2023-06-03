@@ -23,6 +23,7 @@ weaponCache.getInstance = function(wid)
     instance.currentUses = instance.maxUses;
     return instance;
 end
+equipDot = love.graphics.newImage("assets/img/equip-dot.png");
 --PRESET WEAPON DATA
 --SWORDS
 weaponCache["IronSword"] = Weapon();

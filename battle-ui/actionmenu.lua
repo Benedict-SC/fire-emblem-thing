@@ -7,7 +7,7 @@ ActionMenu = function(unit)
     local am = {};
     am.img = actionMenuImg;
     am.box = MenuBox(actionMenuImg,10);
-    am.cursorPosition = 0; --0 is no draw
+    am.cursorPosition = 1; --0 is no draw
     am.options = Array();
     am.unit = unit;
     --let's populate the options
