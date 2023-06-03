@@ -13,10 +13,10 @@
     "enemyUnits":[
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 3-5","x":3,"y":5,"mov":5,"presetWeapons":["IronLance"]},
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Special Boy 7-4","def":10,"x":7,"y":4,"mov":5,"presetWeapons":["SteelLance","Javelin"]},
-        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Specialer Boy 8-5","def":10,"x":8,"y":5,"mov":5,"presetWeapons":["SteelLance","Javelin"]},
-        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 7-6","x":7,"y":6,"mov":5},
-        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 6-3","x":6,"y":3,"mov":5},
-        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 5-4","x":5,"y":4,"mov":5},
+        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Specialer Boy 8-5","def":10,"x":8,"y":5,"mov":5,"presetWeapons":["Javelin","SteelLance"]},
+        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 7-6","x":7,"y":6,"mov":5,"presetWeapons":["IronLance"]},
+        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 6-3","x":6,"y":3,"mov":5,"presetWeapons":["IronLance"],"spd":2},
+        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 5-4","x":5,"y":4,"mov":5,"presetWeapons":["IronLance"],"spd":5},
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","x":2,"y":2,"mov":5},
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","x":10,"y":3,"mov":5,"presetWeapons":["IronLance"]},
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","x":9,"y":8,"mov":5,"presetWeapons":["IronLance"],"presetItems":["Vulnerary"]}        

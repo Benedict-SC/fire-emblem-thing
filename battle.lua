@@ -27,6 +27,9 @@ Battle = function(mapfile)
             local menuToRender = menus[battle.state];
             menuToRender.render(battle.camera);
         end
+        if battle.state == "COMBATPREVIEW" then
+            battle.fight.renderPreview();
+        end
     end
     battle.update = function()
         battle.processZoomInput();
@@ -148,6 +151,10 @@ Battle = function(mapfile)
         elseif (battle.state == "COMBATPREVIEW") then
             --special selector positioning
             battle.updateTargetingSelector();
+            local targetUnit = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
+            if (battle.fight.def ~= targetUnit) then  
+                battle.fight = Fight(battle.pickWeaponMenu.unit,targetUnit);
+            end
             if battle.input_cancel() then
                 battle.state = "PICKWEAPON";
             end

@@ -8,6 +8,7 @@ TemplateUnit = function(unitdata)
     unit.str = unitdata.str or 0;
     unit.skl = unitdata.skl or 0;
     unit.luk = unitdata.luk or 0;
+    unit.spd = unitdata.spd or 0;
     unit.def = unitdata.def or 0;
     unit.res = unitdata.res or 0;
     unit.mov = unitdata.mov or 3;

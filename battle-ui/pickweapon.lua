@@ -1,4 +1,5 @@
 require("menubox");
+require("fight");
 pickWeaponImg = love.graphics.newImage("assets/img/sliceablemenu.png");
 pickWeaponCursor = love.graphics.newImage("assets/img/unbounded-cursor.png");
 pickWeaponOptionHeight = 23;
@@ -54,6 +55,7 @@ PickWeapon = function(unit)
                 local randomUnit = b.verticalTargetList[1];
                 b.selectorPos.x = randomUnit.x;
                 b.selectorPos.y = randomUnit.y;
+                b.fight = Fight(pw.unit,randomUnit);
                 b.state = "COMBATPREVIEW";
             end
         end

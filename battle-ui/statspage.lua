@@ -21,10 +21,10 @@ StatsPage = function()
         love.graphics.print("STR: " .. sp.unit.str,60,170);
         love.graphics.print("SKL: " .. sp.unit.skl,60,195);
         love.graphics.print("CON: " .. sp.unit.con,60,220);
-        love.graphics.print("LUK: " .. sp.unit.luk,185,145);
-        love.graphics.print("DEF: " .. sp.unit.def,185,170);
-        love.graphics.print("RES: " .. sp.unit.res,185,195);
-        love.graphics.print("MOV: " .. sp.unit.mov,185,220);
+        love.graphics.print("SPD: " .. sp.unit.spd,185,145);
+        love.graphics.print("LUK: " .. sp.unit.luk,185,170);
+        love.graphics.print("DEF: " .. sp.unit.def,185,195);
+        love.graphics.print("RES: " .. sp.unit.res,185,220);
         love.graphics.draw(sp.unit.port,36,22);
 
         for i=1,#sp.unit.inventory,1 do

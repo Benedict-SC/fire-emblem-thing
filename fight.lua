@@ -1,14 +1,34 @@
 require("menubox");
-fightDefBoxImg = love.graphics.newImage("assets/img/sliceablemenu.png");
-fightAggBoxImg = love.graphics.newImage("assets/img/sliceablemenu.png");
-fightUIBG = love.
+fightUIBG = love.graphics.newImage("assets/img/combat-preview.png");
+fiteHites = {57,88,124,158}; --y
+fiteSites = {22,55,87}; --x
 Fight = function(aggressor,defender)
     local fight = {};
     fight.agg = aggressor;
     fight.def = defender;
 
     fight.renderPreview = function()
-
+        love.graphics.setColor(1,1,1,1);
+        love.graphics.draw(fightUIBG,10,10);
+        love.graphics.print(fight.agg.getEquippedWeapon().name,43,30);
+        local dw = fight.def.getEquippedWeapon();
+        if dw then
+            love.graphics.print(fight.def.getEquippedWeapon().name,18,180);
+        end
+        love.graphics.setColor(0,0,0,1);
+        love.graphics.print(fight.aHP,fiteSites[1],fiteHites[1]);
+        love.graphics.print(" HP",fiteSites[2],fiteHites[1]);
+        love.graphics.print(fight.dHP == -1 and "--" or fight.dHP,fiteSites[3],fiteHites[1]);
+        love.graphics.print(fight.aDmg,fiteSites[1],fiteHites[2]);
+        love.graphics.print("Dmg",fiteSites[2],fiteHites[2]);
+        love.graphics.print(fight.dDmg == -1 and "--" or fight.dDmg,fiteSites[3],fiteHites[2]);
+        love.graphics.print(fight.aHit,fiteSites[1],fiteHites[3]);
+        love.graphics.print("Hit",fiteSites[2],fiteHites[3]);
+        love.graphics.print(fight.dHit == -1 and "--" or fight.dHit,fiteSites[3],fiteHites[3]);
+        love.graphics.print(fight.aCrit,fiteSites[1],fiteHites[4]);
+        love.graphics.print("Crit",fiteSites[2],fiteHites[4]);
+        love.graphics.print(fight.dCrit == -1 and "--" or fight.dCrit,fiteSites[3],fiteHites[4]);
+        love.graphics.setColor(1,1,1,1);
     end
     fight.calculateDamage = function(attacker)
         local a = attacker and fight.agg or fight.def;
