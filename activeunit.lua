@@ -6,6 +6,7 @@ ActiveUnit = function(unitdata)
     unit.portraitFile = unitdata.portraitFile;
     unit.class = UnitClass();
     unit.name = unitdata.name or "Combatant";
+    unit.animFilename = unitdata.animFilename or "dummy";
     unit.faction = "ENEMY";
     unit.friendly = false;
     unit.hp = unitdata.hp or 1;

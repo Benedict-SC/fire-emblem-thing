@@ -98,6 +98,29 @@ input.checkIfAnyAreDown = function(keytype)
 	end
 	return false;
 end
+input.getNormalizedJoystickVector = function()
+	local x = activeJoystick:getGamepadAxis("leftx");
+	local y = activeJoystick:getGamepadAxis("lefty");
+	if math.abs(x) < input.joystickDeadzone then
+		x = 0;
+	else
+		x = (x < 0) and -1 or 1;
+	end
+	if math.abs(y) < input.joystickDeadzone then
+		y = 0;
+	else
+		y = (y < 0) and -1 or 1;
+	end
+	return {x=x,y=y};
+end
+input.getManhattanNormalizedJoystickVector = function(distance)
+	local x = activeJoystick:getGamepadAxis("leftx");
+	local y = activeJoystick:getGamepadAxis("lefty");
+	local yProportion = math.abs(y) / (math.abs(x)+math.abs(y));
+	ySpaces = math.floor(distance * yProportion + 0.5);
+	xSpaces = distance - ySpaces;
+	return {x=signof(x) * xSpaces,y=signof(y) * ySpaces};
+end
 input.update = function()
 	pressedThisFrame = {up=false,down=false,left=false,right=false,action=false,cancel=false,menu=false,leftTab=false,rightTab=false,mouse1=false,mouse2=false,zoomIn=false,zoomOut=false};
 	releasedThisFrame = {up=false,down=false,left=false,right=false,action=false,cancel=false,menu=false,leftTab=false,rightTab=false,mouse1=false,mouse2=false,zoomIn=false,zoomOut=false};

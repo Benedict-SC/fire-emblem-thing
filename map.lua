@@ -159,6 +159,9 @@ Map = function(filename)
     map.cellFromNode = function(node)
         return map.cells[node.y][node.x];
     end
+    map.unitAt = function(x,y)
+        return map.cells[y][x].occupant;
+    end
     map.moveUnitTo = function(unit,destX,destY) 
         map.cells[unit.y][unit.x].occupant = nil;
         unit.x = destX;

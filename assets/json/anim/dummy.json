@@ -1,0 +1,21 @@
+{
+    "default":"dummy",
+	"animations":{
+		"dummy":{
+			"filepath":"assets/img/anim/dummy.png",
+			"frames":1,
+			"fps":15,
+			"height":60,
+			"width":60,
+			"playOnce":false
+		},
+		"wiggle":{
+			"filepath":"assets/img/anim/dummy-wiggle.png",
+			"frames":2,
+			"fps":15,
+			"height":60,
+			"width":60,
+			"playOnce":false
+		}
+	}
+}

@@ -30,6 +30,9 @@ Battle = function(mapfile)
         if battle.state == "COMBATPREVIEW" then
             battle.fight.renderPreview();
         end
+        if (battle.state == "COMBAT") then
+            battle.fightScreen.render();
+        end
     end
     battle.update = function()
         battle.processZoomInput();
@@ -97,16 +100,20 @@ Battle = function(mapfile)
                         local u = battle.moveUnit;
                         u.walkIndex = u.walkIndex + 1;
                         if u.walkIndex == #battle.movePath then
-                            battle.map.moveUnitTo(u,
-                                                battle.movePath[#battle.movePath].x,
-                                                battle.movePath[#battle.movePath].y);
+                            local wx = battle.movePath[#battle.movePath].x;
+                            local wy = battle.movePath[#battle.movePath].y;
+                            battle.map.moveUnitTo(u,wx,wy);                            
+                            battle.camera.recenter(battle,wx,wy);
                             u.xoff = 0;
                             u.yoff = 0;
                             u.walkIndex = nil;
                             battle.actionMenu = ActionMenu(u);
                             battle.resetPathing();
                             battle.state = "ACTION"; --TODO: ACTION
-                        else
+                        else                     
+                            battle.camera.recenter(battle,
+                                    battle.movePath[u.walkIndex].x,
+                                    battle.movePath[u.walkIndex].y);
                             async.doOverTime(0.06,segFunc,segEndFunc);
                         end
                     end
@@ -158,8 +165,22 @@ Battle = function(mapfile)
             if battle.input_cancel() then
                 battle.state = "PICKWEAPON";
             end
+            if battle.input_select() then
+                battle.fightScreen = FightScreen(battle.fight);
+                battle.clearOverlays();
+                async.doOverTime(0.25,
+                    function(percent) 
+                        battle.fightScreen.spinprog = percent;
+                    end,
+                    function() 
+                        battle.fightScreen.spinprog = 1;
+                    end
+                );
+                battle.state = "COMBAT";
+            end
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
+            battle.fightScreen.update();
         end
     end
     --SECTION: MOVEMENT STATE PATHFINDING
@@ -337,7 +358,7 @@ Battle = function(mapfile)
                 battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
                 battle.selectorPos.x = x;
                 battle.selectorPos.y = y;
-                battle.camera.recenter(battle,x,y);
+                --battle.camera.recenter(battle,x,y);
             end
         elseif controlMode == "KEYBOARD" then
             if pressedThisFrame["right"] then
@@ -380,6 +401,66 @@ Battle = function(mapfile)
                 battle.horizontalTargetIndex = battle.horizontalTargetList.indexOf(unit);
                 battle.selectorPos.x = unit.x;
                 battle.selectorPos.y = unit.y;
+                battle.camera.recenter(battle,unit.x,unit.y);
+            end
+        elseif controlMode == "CONTROLLER" then
+            if pressedThisFrame["up"] or pressedThisFrame["down"] or pressedThisFrame["left"] or pressedThisFrame["right"] then
+                local vec = input.getNormalizedJoystickVector();
+                --[[local targetSpace = {x=battle.selectorPos.x + vec.x,y=battle.selectorPos.y + vec.y};
+                local matchingUnits = battle.verticalTargetList.filter(function(unit) 
+                    return (unit.x == targetSpace.x) and (unit.y == targetSpace.y);
+                end);
+                if (matchingUnits.size > 0) then
+                    local unit = matchingUnits[1];
+                    battle.selectorPos.x = unit.x;
+                    battle.selectorPos.y = unit.y;
+                    battle.horizontalTargetIndex = battle.horizontalTargetList.indexOf(unit);
+                    battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
+                end]]--
+                local snapSelect = false; 
+                if #(battle.pickWeaponMenu.selectedWeapon.range) == 1 then
+                    local manhattanVec = input.getManhattanNormalizedJoystickVector(battle.pickWeaponMenu.selectedWeapon.range[1]);
+                    local targetSpace = {x=battle.pickWeaponMenu.unit.x + manhattanVec.x,y=battle.pickWeaponMenu.unit.y + manhattanVec.y};
+                    local matchingUnits = battle.verticalTargetList.filter(function(unit) 
+                        return (unit.x == targetSpace.x) and (unit.y == targetSpace.y);
+                    end);
+                    if matchingUnits.size >= 1 then
+                        local unit = matchingUnits[1];
+                        battle.selectorPos.x = unit.x;
+                        battle.selectorPos.y = unit.y;
+                        battle.horizontalTargetIndex = battle.horizontalTargetList.indexOf(unit);
+                        battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
+                        snapSelect = true;
+                    end
+                end
+                if not snapSelect then --no unit was found to snap to, so we do it the hard way
+                    if vec.y == 0 then 
+                        battle.horizontalTargetIndex = battle.horizontalTargetIndex + vec.x;
+                        if battle.horizontalTargetIndex < 1 then
+                            battle.horizontalTargetIndex = battle.horizontalTargetList.size;
+                        end  
+                        if battle.horizontalTargetIndex > battle.horizontalTargetList.size then
+                            battle.horizontalTargetIndex = 1;
+                        end
+                        local unit = battle.horizontalTargetList[battle.horizontalTargetIndex];
+                        battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
+                        battle.selectorPos.x = unit.x;
+                        battle.selectorPos.y = unit.y;
+                    else
+                        battle.verticalTargetIndex = battle.verticalTargetIndex + vec.y;
+                        if battle.verticalTargetIndex < 1 then
+                            battle.verticalTargetIndex = battle.verticalTargetList.size;
+                        end
+                        if battle.verticalTargetIndex > battle.verticalTargetList.size then
+                            battle.verticalTargetIndex = 1;
+                        end
+                        
+                        local unit = battle.verticalTargetList[battle.verticalTargetIndex];
+                        battle.horizontalTargetIndex = battle.horizontalTargetList.indexOf(unit);
+                        battle.selectorPos.x = unit.x;
+                        battle.selectorPos.y = unit.y;
+                    end
+                end
             end
         end
         

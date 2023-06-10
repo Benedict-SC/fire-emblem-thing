@@ -1,7 +1,7 @@
 require("menubox");
 fightUIBG = love.graphics.newImage("assets/img/combat-preview.png");
 fiteHites = {57,88,124,158}; --y
-fiteSites = {22,55,87}; --x
+fiteSites = {22,55,92}; --x
 Fight = function(aggressor,defender)
     local fight = {};
     fight.agg = aggressor;

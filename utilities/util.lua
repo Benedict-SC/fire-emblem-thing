@@ -109,3 +109,14 @@ deepcopy = function(orig) --http://lua-users.org/wiki/CopyTable
     end
     return copy
 end
+signof = function(x)
+	if x < 0 then
+	  return -1;
+	elseif x > 0 then
+	  return 1;
+	else
+	  return 0;
+	end
+ end
+ 
+ 

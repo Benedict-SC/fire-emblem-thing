@@ -126,7 +126,7 @@ async.doOverTime = function(secs,everyFrame,funcwhendone)
 		local percent = timeElapsed/secs;
 		updater.done = percent >= 1;
 		if updater.done then percent = 1; end
-		everyFrame(percent);
+		updater.everyFrame(percent);
 		if updater.done then 
 			updater.finish();
 		end
