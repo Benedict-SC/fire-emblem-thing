@@ -8,13 +8,14 @@ Weapon = function()
     wepon.hit = 80;
     wepon.crit = 0;
     wepon.weight = 8;
-    wepon.range = {1};
+    wepon.range = arrayify({1});
     wepon.maxUses = 40;
     wepon.goldValue = 200;
     wepon.usable = function()
         return false;
     end
     wepon.isWeapon = true;
+    wepon.brave = false;
     return wepon;
 end
 weaponCache = {};
@@ -33,6 +34,16 @@ weaponCache["IronSword"].iconfile = "assets/img/sword.png";
 weaponCache["IronSword"].might = 5;
 weaponCache["IronSword"].hit = 90;
 weaponCache["IronSword"].weight = 7;
+
+weaponCache["BraveSword"] = Weapon();
+weaponCache["BraveSword"].name = "Brave Sword";
+weaponCache["BraveSword"].wtype = "SWORD";
+weaponCache["BraveSword"].might = 9;
+weaponCache["BraveSword"].hit = 75;
+weaponCache["BraveSword"].brave = true;
+weaponCache["BraveSword"].rank = "B";
+weaponCache["BraveSword"].weight = 16;
+weaponCache["BraveSword"].maxUses = 30;
 
 --LANCES
 weaponCache["IronLance"] = Weapon();
@@ -57,7 +68,7 @@ weaponCache["Javelin"].wtype = "LANCE";
 weaponCache["Javelin"].iconfile = "assets/img/lance.png";
 weaponCache["Javelin"].might = 6;
 weaponCache["Javelin"].rank = "D";
-weaponCache["Javelin"].range = {1,2};
+weaponCache["Javelin"].range = Array(1,2);
 weaponCache["Javelin"].hit = 60;
 weaponCache["Javelin"].weight = 11;
 weaponCache["Javelin"].maxUses = 25;
@@ -69,7 +80,7 @@ weaponCache["IronBow"].wtype = "BOW";
 weaponCache["IronBow"].iconfile = "assets/img/bow.png";
 weaponCache["IronBow"].might = 6;
 weaponCache["IronBow"].hit = 85;
-weaponCache["IronBow"].range = {2};
+weaponCache["IronBow"].range = Array(2);
 weaponCache["IronBow"].weight = 5;
 
 --DARK MAGIC
@@ -80,5 +91,5 @@ weaponCache["Flux"].iconfile = "assets/img/book.png";
 weaponCache["Flux"].might = 7;
 weaponCache["Flux"].hit = 70;
 weaponCache["Flux"].crit = 5;
-weaponCache["Flux"].range = {1,2};
+weaponCache["Flux"].range = Array(1,2);
 weaponCache["Flux"].weight = 3;

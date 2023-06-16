@@ -86,6 +86,12 @@ Fight = function(aggressor,defender)
         if aWeightMalus < 0 then aWeightMalus = 0; end
         return a.spd - aWeightMalus;
     end
+    fight.defenderCanCounter = function()
+        local dist = manhattan(fight.agg,fight.def);
+        local dwep = fight.def.getEquippedWeapon();
+        if not dwep then return false; end
+        return dwep.range.has(dist);
+    end
     fight.aHP = fight.agg.hp;
     fight.dHP = fight.def.hp;
     fight.aDmg = fight.calculateDamage(true);
@@ -94,5 +100,38 @@ Fight = function(aggressor,defender)
     fight.dHit = fight.calculateHit(false);
     fight.aCrit = fight.calculateCrit(true);
     fight.dCrit = fight.calculateCrit(false);
+    if not fight.defenderCanCounter() then
+        fight.dDmg = -1;
+        fight.dHit = -1;
+        fight.dCrit = -1;
+    end
+
+    fight.turns = Array();
+    if true then --TODO: replace true with a check of the defending unit's skills for Vantage
+        fight.turns.push(fight.agg);
+        if fight.agg.getEquippedWeapon().brave then
+            fight.turns.push(fight.agg);
+        end
+    end
+    if fight.defenderCanCounter() then --TODO: put an "and they don't have vantage and so didn't go already" check here
+        fight.turns.push(fight.def);
+        if fight.def.getEquippedWeapon().brave then
+            fight.turns.push(fight.def);
+        end
+    end
+    if fight.doTheyDouble(true) then
+        fight.turns.push(fight.agg);
+        if fight.agg.getEquippedWeapon().brave then
+            fight.turns.push(fight.agg);
+        end
+    end
+    if fight.doTheyDouble(false) then
+        fight.turns.push(fight.def);
+        if fight.def.getEquippedWeapon().brave then
+            fight.turns.push(fight.def);
+        end
+    end
+
+
     return fight;
 end

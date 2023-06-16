@@ -118,5 +118,6 @@ signof = function(x)
 	  return 0;
 	end
  end
- 
- 
+ manhattan = function(obj1,obj2)
+	return math.abs(obj1.x-obj2.x) + math.abs(obj1.y-obj2.y);
+ end
