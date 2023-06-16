@@ -2,8 +2,10 @@ fightUiBg = love.graphics.newImage("assets/img/fight-ui-bg.png");
 fightUiWeaponBg = love.graphics.newImage("assets/img/fight-ui-weapon-bg.png");
 fightUiBorder = love.graphics.newImage("assets/img/fight-ui-border.png");
 fightHpTickWidth = 4;
+fightUiSpinDuration = 0.25;
 FightScreen = function(fight)
     local fs = {};
+    fs.state = "SPININ"; --WINDUP, POSTIMPACT, EXP, SPINOUT, DONE
     fs.fight = fight;
     fs.canvas = love.graphics.newCanvas(gamewidth,gameheight);
     fs.spinprog = 0;
@@ -79,12 +81,67 @@ FightScreen = function(fight)
 
         love.graphics.setColor(1,1,1,1);
         fs.aggAnimation.draw(171,156,0,1,1);
-        fs.aggAnimation.setAnimation("wiggle");
         fs.defAnimation.draw(362 + fs.defAnimation.width(),156,0,-1,1);
         love.graphics.popCanvas();
         love.graphics.draw(fs.canvas,gamewidth/2,gameheight/2,-2*math.pi*fs.spinprog,fs.spinprog,fs.spinprog,gamewidth/2,gameheight/2);
     end
-    fs.update = function()
+    fs.update = function() --do we even use this state machine?
+        --[[if fs.state == "SPININ" then 
+
+        elseif fs.state == "WINDUP" then
+
+        elseif fs.state == "POSTIMPACT" then
+
+        elseif fs.state == "EXP" then
+
+        elseif fs.state == "SPINOUT"
+
+        end]]--
+    end
+    fs.begin = function()
+        async.doOverTime(fightUiSpinDuration,
+            function(percent) 
+                fs.spinprog = percent;
+            end,
+            function() 
+                fs.spinprog = 1;
+                fs.state = "WINDUP";
+                fs.aggAnimation.playXTimesAndThen("attack",10,function() --TODO: longer dummy anims, just play once
+                    fs.impact();
+                end)
+            end
+        );
+    end
+    fs.impact = function()
+        fs.state = "POSTIMPACT";
+        fs.aggAnimation.playOnceAndThen("recoil",function()
+            fs.aggAnimation.setAnimation("done");
+        end)
+        local startHP = fs.fight.def.hp; --TODO: calculate this properly
+        local endHP = fs.fight.def.hp - fs.fight.aDmg;
+        if endHP < 0 then 
+            endHP = 0; 
+        end
+        local totalDealt = startHP - endHP;
+        async.doOverTime(1,function(percent) 
+            fs.fight.def.hp = math.floor(endHP + ((1-percent)*totalDealt) + 0.5);
+        end,function() 
+            fs.fight.def.hp = endHP;            
+            fs.transitionOut();
+        end)
+    end
+    fs.transitionOut = function()
+        fs.state = "SPINOUT";
+        async.doOverTime(fightUiSpinDuration,
+            function(percent) 
+                fs.spinprog = 1 - percent;
+            end,
+            function() 
+                fs.spinprog = 0;
+                fs.state = "DONE";
+                game.battle.resolveFight();
+            end
+        );
     end
     return fs;
 end

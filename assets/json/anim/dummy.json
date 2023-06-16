@@ -1,7 +1,7 @@
 {
-    "default":"dummy",
+    "default":"idle",
 	"animations":{
-		"dummy":{
+		"idle":{
 			"filepath":"assets/img/anim/dummy.png",
 			"frames":1,
 			"fps":15,
@@ -9,13 +9,29 @@
 			"width":60,
 			"playOnce":false
 		},
-		"wiggle":{
+		"attack":{
 			"filepath":"assets/img/anim/dummy-wiggle.png",
 			"frames":2,
 			"fps":15,
 			"height":60,
 			"width":60,
-			"playOnce":false
+			"playOnce":true
+		},
+		"recoil":{
+			"filepath":"assets/img/anim/dummy-recoil.png",
+			"frames":5,
+			"fps":15,
+			"height":60,
+			"width":60,
+			"playOnce":true
+		},
+		"done":{
+			"filepath":"assets/img/anim/dummy-done.png",
+			"frames":1,
+			"fps":15,
+			"height":60,
+			"width":60,
+			"playOnce":true
 		}
 	}
 }

@@ -27,6 +27,7 @@ DEBUG_FONT = love.graphics.getFont();
 require("thirdparty.json4lua");
 require("thirdparty.tablecopy");
 require("utilities.util");
+require("utilities.shaders");
 require("utilities.async");
 require("utilities.input");
 require("utilities.path");

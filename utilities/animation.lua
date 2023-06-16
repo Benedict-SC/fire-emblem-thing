@@ -51,6 +51,15 @@ Animation = function(filename)
 		base.playAnimation(animonce);
 		base.whenDone = endfunc;
 	end
+	base.playXTimesAndThen = function(animx,times,endfunc)
+		if times <= 1 then
+			base.playOnceAndThen(animx,endfunc);
+		else
+			base.playOnceAndThen(animx,function() 
+				base.playXTimesAndThen(animx,times-1,endfunc);
+			end)
+		end
+	end
 	base.getFrame = function()
 		local anim = base.anims[base.currentAnim];
 		local framesElapsed = (love.timer.getTime() - base.startTime) * anim.fps;
@@ -59,8 +68,11 @@ Animation = function(filename)
 		if anim.playOnce and framesElapsed > framecount then 
 			frame = framecount; 
 			if base.whenDone then
-				base.whenDone();
-				base.whenDone = nil;
+				local currentWhenDoneFunction = base.whenDone;
+				currentWhenDoneFunction();
+				if currentWhenDoneFunction == base.whenDone then --only clear the whendone if a new one hasn't already been set
+					base.whenDone = nil;
+				end
 			end
 		end --if the animation should only play once
 		return anim.frames[frame];

@@ -168,20 +168,18 @@ Battle = function(mapfile)
             if battle.input_select() then
                 battle.fightScreen = FightScreen(battle.fight);
                 battle.clearOverlays();
-                async.doOverTime(0.25,
-                    function(percent) 
-                        battle.fightScreen.spinprog = percent;
-                    end,
-                    function() 
-                        battle.fightScreen.spinprog = 1;
-                    end
-                );
+                battle.fightScreen.begin();
                 battle.state = "COMBAT";
             end
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
             battle.fightScreen.update();
         end
+    end
+    --SECTION: EXTERNAL CONTROL
+    battle.resolveFight = function()
+        --TODO: Actually do end-of-combat housekeeping here.
+        battle.state = "MAINPHASE";
     end
     --SECTION: MOVEMENT STATE PATHFINDING
     battle.resetPathing = function()
