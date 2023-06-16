@@ -9,8 +9,12 @@ FightScreen = function(fight)
     fs.fight = fight;
     fs.canvas = love.graphics.newCanvas(gamewidth,gameheight);
     fs.spinprog = 0;
-    fs.aggAnimation = Animation(fight.agg.animFilename);
-    fs.defAnimation = Animation(fight.def.animFilename);
+    if not fight.agg.anim then 
+        fight.agg.anim = Animation(fight.agg.animFilename);
+    end
+    if not fight.def.anim then
+        fight.def.anim = Animation(fight.def.animFilename);
+    end
 
     fs.render = function()
         love.graphics.pushCanvas(fs.canvas);
@@ -80,8 +84,8 @@ FightScreen = function(fight)
 
 
         love.graphics.setColor(1,1,1,1);
-        fs.aggAnimation.draw(171,156,0,1,1);
-        fs.defAnimation.draw(362 + fs.defAnimation.width(),156,0,-1,1);
+        fs.fight.agg.anim.draw(171,156,0,1,1);
+        fs.fight.def.anim.draw(362 + fs.fight.def.anim.width(),156,0,-1,1);
         love.graphics.popCanvas();
         love.graphics.draw(fs.canvas,gamewidth/2,gameheight/2,-2*math.pi*fs.spinprog,fs.spinprog,fs.spinprog,gamewidth/2,gameheight/2);
     end
@@ -106,28 +110,46 @@ FightScreen = function(fight)
             function() 
                 fs.spinprog = 1;
                 fs.state = "WINDUP";
-                fs.aggAnimation.playXTimesAndThen("attack",10,function() --TODO: longer dummy anims, just play once
-                    fs.impact();
-                end)
+                fs.turnIndex = 1;
+                fs.initializeAttack();
             end
         );
     end
+    fs.initializeAttack = function()
+        fs.goer = fs.fight.turns[fs.turnIndex];
+        if fs.goer == fs.fight.agg then
+            fs.notGoer = fs.fight.def;
+            fs.goDmg = fs.fight.aDmg;
+        else
+            fs.notGoer = fs.fight.agg;
+            fs.goDmg = fs.fight.dDmg;
+        end
+        local anim = fs.goer.anim;
+        anim.playXTimesAndThen("attack",10,function() --TODO: longer dummy anims, just play once
+            fs.impact();
+        end);
+    end
     fs.impact = function()
         fs.state = "POSTIMPACT";
-        fs.aggAnimation.playOnceAndThen("recoil",function()
-            fs.aggAnimation.setAnimation("done");
+        fs.goer.anim.playOnceAndThen("recoil",function()
+            fs.goer.anim.setAnimation("done");
         end)
-        local startHP = fs.fight.def.hp; --TODO: calculate this properly
-        local endHP = fs.fight.def.hp - fs.fight.aDmg;
+        local startHP = fs.notGoer.hp; --TODO: calculate this properly
+        local endHP = fs.notGoer.hp - fs.goDmg;
         if endHP < 0 then 
             endHP = 0; 
         end
         local totalDealt = startHP - endHP;
         async.doOverTime(1,function(percent) 
-            fs.fight.def.hp = math.floor(endHP + ((1-percent)*totalDealt) + 0.5);
+            fs.notGoer.hp = math.floor(endHP + ((1-percent)*totalDealt) + 0.5);
         end,function() 
-            fs.fight.def.hp = endHP;            
-            fs.transitionOut();
+            fs.notGoer.hp = endHP;
+            fs.turnIndex = fs.turnIndex + 1;
+            if fs.turnIndex > #(fs.fight.turns) then            
+                fs.transitionOut();
+            else
+                fs.initializeAttack();
+            end
         end)
     end
     fs.transitionOut = function()

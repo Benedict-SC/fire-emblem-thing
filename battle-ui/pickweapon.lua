@@ -18,6 +18,7 @@ PickWeapon = function(unit)
             local opt = pw.unit.inventory[pw.cursorPosition];
             if opt.isWeapon then
                 pw.selectedWeapon = opt;
+                pw.unit.equip(pw.cursorPosition);
                 --get the list of units in range of that weapon
                 local cellsInRange = b.map.getCellsInRanges(pw.unit.x,pw.unit.y,opt.range);
                 cellsInRange = cellsInRange.filter(function(x) 
