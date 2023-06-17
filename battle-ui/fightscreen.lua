@@ -9,6 +9,7 @@ FightScreen = function(fight)
     fs.fight = fight;
     fs.canvas = love.graphics.newCanvas(gamewidth,gameheight);
     fs.spinprog = 0;
+    fs.hitflash = 0;
     if not fight.agg.anim then 
         fight.agg.anim = Animation(fight.agg.animFilename);
     end
@@ -85,7 +86,11 @@ FightScreen = function(fight)
 
         love.graphics.setColor(1,1,1,1);
         fs.fight.agg.anim.draw(171,156,0,1,1);
+        love.graphics.setShader(flashShader);
+        love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,1);
         fs.fight.def.anim.draw(362 + fs.fight.def.anim.width(),156,0,-1,1);
+        love.graphics.setColor(1,1,1,1);
+        love.graphics.setShader();
         love.graphics.popCanvas();
         love.graphics.draw(fs.canvas,gamewidth/2,gameheight/2,-2*math.pi*fs.spinprog,fs.spinprog,fs.spinprog,gamewidth/2,gameheight/2);
     end
@@ -140,6 +145,11 @@ FightScreen = function(fight)
             endHP = 0; 
         end
         local totalDealt = startHP - endHP;
+        async.doOverTime(0.5,function(percent) 
+            fs.hitflash = 1- math.abs(percent * 2 - 1);
+        end,function()
+            fs.hitflash = 0;
+        end);
         async.doOverTime(1,function(percent) 
             fs.notGoer.hp = math.floor(endHP + ((1-percent)*totalDealt) + 0.5);
         end,function() 
