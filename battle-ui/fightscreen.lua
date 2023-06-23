@@ -85,12 +85,21 @@ FightScreen = function(fight)
 
 
         love.graphics.setColor(1,1,1,1);
+
+        if fs.goer ~= fs.fight.agg then
+            love.graphics.setShader(flashShader);
+            love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,1);
+        end
         fs.fight.agg.anim.draw(171,156,0,1,1);
-        love.graphics.setShader(flashShader);
-        love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,1);
-        fs.fight.def.anim.draw(362 + fs.fight.def.anim.width(),156,0,-1,1);
-        love.graphics.setColor(1,1,1,1);
         love.graphics.setShader();
+        love.graphics.setColor(1,1,1,1);
+        if fs.goer == fs.fight.agg then
+            love.graphics.setShader(flashShader);
+            love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,1);
+        end
+        fs.fight.def.anim.draw(362 + fs.fight.def.anim.width(),156,0,-1,1);
+        love.graphics.setShader();
+        love.graphics.setColor(1,1,1,1);
         love.graphics.popCanvas();
         love.graphics.draw(fs.canvas,gamewidth/2,gameheight/2,-2*math.pi*fs.spinprog,fs.spinprog,fs.spinprog,gamewidth/2,gameheight/2);
     end
@@ -122,6 +131,9 @@ FightScreen = function(fight)
     end
     fs.initializeAttack = function()
         fs.goer = fs.fight.turns[fs.turnIndex];
+        if fs.goer.getEquippedWeapon().currentUses <= 0 then --TODO: check if goer is immobilized somehow, too
+            fs.startNextTurn();
+        end
         if fs.goer == fs.fight.agg then
             fs.notGoer = fs.fight.def;
             fs.goDmg = fs.fight.aDmg;
@@ -154,13 +166,20 @@ FightScreen = function(fight)
             fs.notGoer.hp = math.floor(endHP + ((1-percent)*totalDealt) + 0.5);
         end,function() 
             fs.notGoer.hp = endHP;
-            fs.turnIndex = fs.turnIndex + 1;
-            if fs.turnIndex > #(fs.fight.turns) then            
-                fs.transitionOut();
-            else
-                fs.initializeAttack();
-            end
+            fs.startNextTurn();
         end)
+    end
+    fs.startNextTurn = function()
+        fs.turnIndex = fs.turnIndex + 1;
+        if fs.turnIndex > #(fs.fight.turns) 
+            or fs.fight.agg.hp <= 0 or fs.fight.def.hp <= 0 then       
+            fs.endCombat();
+        else
+            fs.initializeAttack();
+        end
+    end
+    fs.endCombat = function()
+        fs.transitionOut();
     end
     fs.transitionOut = function()
         fs.state = "SPINOUT";

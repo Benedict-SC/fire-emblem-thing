@@ -5,7 +5,8 @@ Game = function()
     game.init = function()
         game.battle = Battle("assets/json/testmap.json");
         game.statspage = StatsPage();
-        game.state = "BATTLE"
+        game.state = "BATTLE";
+        game.battle.changePhase();
     end
     game.render = function()
         if game.state == "BATTLE" then
