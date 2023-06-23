@@ -1,10 +1,12 @@
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, COMBATPREVIEW, TARGET, COMBAT
+    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, COMBATPREVIEW, TARGET, COMBAT, DISPLAY
     battle.map = Map(mapfile);
     battle.selector = love.graphics.newImage("assets/img/selector.png");
     battle.selectorPos = {x=5,y=5};
+    battle.displayStuff = Array();
     battle.units = battle.map.units;
+    battle.casualties = Array();
     battle.camera = BattleCam();
     battle.render = function()
         love.graphics.pushCanvas(battle.map.drawCanvas);
@@ -32,6 +34,13 @@ Battle = function(mapfile)
         end
         if (battle.state == "COMBAT") then
             battle.fightScreen.render();
+        end
+
+        if battle.state == "DISPLAY" then
+            for i=1,#(battle.displayStuff),1 do
+                local thing = battle.displayStuff[i];
+                love.graphics.draw(thing.drawable,thing.x,thing.y);
+            end
         end
     end
     battle.update = function()
@@ -180,6 +189,27 @@ Battle = function(mapfile)
     battle.resolveFight = function()
         --TODO: Actually do end-of-combat housekeeping here.
         battle.state = "MAINPHASE";
+    end
+    battle.changePhase = function()
+        battle.state = "DISPLAY";
+        battle.displayStuff = Array();
+        local phaseText = love.graphics.newImage("assets/img/phase-player.png");
+        local ptThing = {};
+        ptThing.drawable = phaseText;
+        ptThing.x = -400;
+        ptThing.y = 100;
+        battle.displayStuff.push(ptThing);
+        async.doOverTime(0.4,function(percent) 
+            ptThing.x = -400 + math.floor(percent * 500 + 0.5);
+        end,function() 
+            async.wait(1.2,function()
+                async.doOverTime(0.4,function(percent) 
+                    ptThing.x = 100 + math.floor(percent * 500 + 0.5);
+                end,function() 
+                    battle.state = "MAINPHASE";
+                end)
+            end);
+        end)
     end
     --SECTION: MOVEMENT STATE PATHFINDING
     battle.resetPathing = function()
