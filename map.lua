@@ -117,7 +117,11 @@ Map = function(filename)
                 local cell = map.cells[i][j];
                 local unit = cell.occupant;
                 if unit ~= nil then
+                    if unit.used then
+                        love.graphics.setShader(grayShader);
+                    end
                     love.graphics.draw(unit.img,(j-1)*50 + unit.xoff,(i-1)*50 + unit.yoff);
+                    love.graphics.setShader();
                 end
             end
         end

@@ -4,11 +4,14 @@ ActiveUnit = function(unitdata)
     unit.port = nil;
     unit.mapSpriteFile = unitdata.mapSpriteFile;
     unit.portraitFile = unitdata.portraitFile;
+
+    unit.faction = "ENEMY";
+    unit.friendly = false;
+    unit.used = false;
+
     unit.class = UnitClass();
     unit.name = unitdata.name or "Combatant";
     unit.animFilename = unitdata.animFilename or "dummy";
-    unit.faction = "ENEMY";
-    unit.friendly = false;
     unit.hp = unitdata.hp or 1;
     unit.maxhp = unitdata.maxhp or unitdata.hp or 1;
     unit.str = unitdata.str or 0;
@@ -21,6 +24,11 @@ ActiveUnit = function(unitdata)
     unit.con = unitdata.con or 10;
     unit.level = 1;
     unit.exp = 0;
+
+    unit.doesCanto = function()
+        return unit.class.mounted; --TODO: check if they have a canto skill or item or something
+    end
+
     unit.inventory = Array();
     unit.equipIdx = 0;
     unit.getRangeSpan = function(discriminatorFunction)

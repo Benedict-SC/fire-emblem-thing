@@ -46,7 +46,7 @@ ActionMenu = function(unit)
     --WAIT
     local waitOption = {name="Wait"};
     waitOption.onPick = function()
-        --end the unit's turn
+        am.unit.used = true;
         game.battle.state = "MAINPHASE"; --TODO: turn logic stuff
     end
     am.options.push(waitOption);

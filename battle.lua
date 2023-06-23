@@ -47,8 +47,10 @@ Battle = function(mapfile)
                 end
             elseif(battle.input_select()) then --We've clicked on a specific map square to take some action on it
                 local occ = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
-                if occ --[[and not occ.movedThisTurn]] then --we've clicked a unit, so we're going to get its range set up and change states to the PATHING state.
+                if occ and not occ.used then --we've clicked a unit, so we're going to get its range set up and change states to the PATHING state.
                     battle.pathfind(occ);
+                else
+                    --TODO: empty square menu
                 end
                 battle.recenterOnSelector();
             end
@@ -178,8 +180,15 @@ Battle = function(mapfile)
     end
     --SECTION: EXTERNAL CONTROL
     battle.resolveFight = function()
+        local unit = battle.fightScreen.fight.agg;
         --TODO: Actually do end-of-combat housekeeping here.
-        battle.state = "MAINPHASE";
+        if unit.doesCanto() then
+
+        else
+            unit.used = true;
+            --TODO: check if the turn is over and change phases if so
+            battle.state = "MAINPHASE";
+        end
     end
     --SECTION: MOVEMENT STATE PATHFINDING
     battle.resetPathing = function()
