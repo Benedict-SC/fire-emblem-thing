@@ -43,6 +43,7 @@ require("menubox");
 require("battle");
 require("battle-ui.battlecam");
 require("battle-ui.actionmenu");
+require("battle-ui.blankmenu");
 require("battle-ui.statspage");
 require("battle-ui.fightscreen");
 require("game");

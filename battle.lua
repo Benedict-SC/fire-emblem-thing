@@ -1,6 +1,6 @@
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, COMBATPREVIEW, TARGET, COMBAT, DISPLAY
+    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY
     battle.map = Map(mapfile);
     battle.selector = love.graphics.newImage("assets/img/selector.png");
     battle.selectorPos = {x=5,y=5};
@@ -24,8 +24,8 @@ Battle = function(mapfile)
         end
         love.graphics.popCanvas();
         love.graphics.draw(battle.map.drawCanvas,-battle.camera.xoff,-battle.camera.yoff,0,battle.camera.factor,battle.camera.factor);
-        if battle.state == "ACTION" or battle.state == "PICKWEAPON" then
-            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu};
+        if battle.state == "ACTION" or battle.state == "PICKWEAPON" or battle.state == "GLOBALMENU" then
+            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["GLOBALMENU"]=battle.globalMenu};
             local menuToRender = menus[battle.state];
             menuToRender.render(battle.camera);
         end
@@ -59,7 +59,8 @@ Battle = function(mapfile)
                 if occ and not occ.used then --we've clicked a unit, so we're going to get its range set up and change states to the PATHING state.
                     battle.pathfind(occ);
                 else
-                    --TODO: empty square menu
+                    battle.globalMenu = BlankMenu(battle.selectorPos.x,battle.selectorPos.y);
+                    battle.state = "GLOBALMENU";
                 end
                 battle.recenterOnSelector();
             end
@@ -138,8 +139,8 @@ Battle = function(mapfile)
             end
         elseif (battle.state == "MOVING") then
             --skip and cancel inputs during the walk go here
-        elseif (battle.state == "ACTION") or (battle.state == "PICKWEAPON") then
-            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu};
+        elseif (battle.state == "ACTION") or (battle.state == "PICKWEAPON") or (battle.state == "GLOBALMENU") then
+            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["GLOBALMENU"]=battle.globalMenu};
             local menuToControl = menus[battle.state];
             if battle.input_cancel() then
                 if battle.state == "PICKWEAPON" then 
@@ -149,6 +150,8 @@ Battle = function(mapfile)
                                             battle.originalCoords.x,
                                             battle.originalCoords.y);
                     battle.pathfind(battle.actionMenu.unit);
+                elseif battle.state == "GLOBALMENU" then
+                    battle.state = "MAINPHASE";
                 end
             else
                 if controlMode == "MOUSE" then
@@ -528,7 +531,8 @@ Battle = function(mapfile)
     end
     battle.input_cancel = function()
         local mouseinput = false;
-        if(battle.state == "PATHING" or battle.state == "ACTION" or battle.state == "PICKWEAPON" or battle.state == "COMBATPREVIEW") then
+        --if(battle.state == "PATHING" or battle.state == "ACTION" or battle.state == "PICKWEAPON" or battle.state == "COMBATPREVIEW") then
+        if battle.state ~= "MAINPHASE" then
             mouseinput = pressedThisFrame.mouse2;
         end
         local otherinput = pressedThisFrame.cancel;

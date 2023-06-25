@@ -5,7 +5,6 @@ actionMenuOptionHeight = 23;
 actionMenuFont = love.graphics.newFont("assets/font/arial.ttf", 17);
 ActionMenu = function(unit)
     local am = {};
-    am.img = actionMenuImg;
     am.box = MenuBox(actionMenuImg,10);
     am.cursorPosition = 1; --0 is no draw
     am.options = Array();
@@ -94,7 +93,6 @@ ActionMenu = function(unit)
         love.graphics.setFont(actionMenuFont);
         local bounds = am.getBounds(mapzoom);
         am.box.draw(bounds.x,bounds.y);
-        --love.graphics.draw(am.img,bounds.x,bounds.y,0,1,bounds.h/am.img:getHeight());
         if am.cursorPosition ~= 0 then
             love.graphics.draw(actionMenuCursor,bounds.x,bounds.y + (actionMenuOptionHeight * (am.cursorPosition-1)) + am.box.bh);
         end
