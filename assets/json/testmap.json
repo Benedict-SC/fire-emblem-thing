@@ -23,8 +23,8 @@
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","x":9,"y":8,"mov":5,"presetWeapons":["IronLance"],"presetItems":["Vulnerary"],"hp":10}        
     ],
     "playerUnits":[
-        {"mapSpriteFile":"assets/img/hero.png","portraitFile":"assets/img/heroport.png","classPreset":"Lord","name":"Protag-san","x":4,"y":7,"mov":7,"presetWeapons":["IronSword","BraveSword"],"presetItems":["Vulnerary"],"hp":15},
+        {"mapSpriteFile":"assets/img/hero.png","portraitFile":"assets/img/heroport.png","classPreset":"Lord","name":"Protag-san","x":4,"y":7,"mov":7,"presetWeapons":["IronSword","BraveSword","TrashSword"],"presetItems":["Vulnerary"],"hp":15},
         {"mapSpriteFile":"assets/img/mage.png","portraitFile":"assets/img/heroport.png","classPreset":"Shaman","name":"Edgy Mage","x":3,"y":8,"mov":7,"presetWeapons":["Flux"],"presetItems":["Vulnerary"],"hp":8},
-        {"mapSpriteFile":"assets/img/archer.png","portraitFile":"assets/img/archerport.png","classPreset":"Archer","name":"Cool Archer","x":5,"y":8,"mov":7,"presetWeapons":["IronBow"],"presetItems":["Vulnerary"],"hp":12,"str":5,"spd":7,"skl":10}
+        {"mapSpriteFile":"assets/img/archer.png","portraitFile":"assets/img/archerport.png","classPreset":"Archer","name":"Cool Archer","x":5,"y":8,"mov":7,"presetWeapons":["IronBow"],"presetItems":["Vulnerary"],"hp":12,"str":16,"spd":7,"skl":10}
     ]
 }

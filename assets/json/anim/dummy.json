@@ -25,6 +25,22 @@
 			"width":60,
 			"playOnce":true
 		},
+		"ouch":{
+			"filepath":"assets/img/anim/dummy-ouch.png",
+			"frames":13,
+			"fps":10,
+			"height":60,
+			"width":60,
+			"playOnce":true
+		},
+		"dodge":{
+			"filepath":"assets/img/anim/dummy-dodge.png",
+			"frames":8,
+			"fps":15,
+			"height":60,
+			"width":60,
+			"playOnce":true
+		},
 		"done":{
 			"filepath":"assets/img/anim/dummy-done.png",
 			"frames":1,

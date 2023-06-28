@@ -121,3 +121,6 @@ signof = function(x)
  manhattan = function(obj1,obj2)
 	return math.abs(obj1.x-obj2.x) + math.abs(obj1.y-obj2.y);
  end
+ random099 = function()
+	return math.floor(math.random() * 100);
+ end

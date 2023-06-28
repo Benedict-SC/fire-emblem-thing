@@ -6,7 +6,9 @@ flashShader = love.graphics.newShader[[
             space.r *= color.r * pixel.a;
             space.g *= color.g * pixel.a;
             space.b *= color.b * pixel.a;
-			return pixel + space;
+			pixel += space;
+      pixel *= color.a;
+      return pixel;
 		}
 ]]
 grayShader = love.graphics.newShader[[

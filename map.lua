@@ -20,6 +20,7 @@ Map = function(filename)
 
     local jsonstring = love.filesystem.read(filename);
     local data = json.decode(jsonstring);
+    map.factionOrder = data.factionOrder and arrayify(data.factionOrder) or arrayify({"PLAYER","ENEMY"});
 
     for i=1,#(data.tiles),1 do
         local row = Array();
@@ -120,7 +121,12 @@ Map = function(filename)
                     if unit.used then
                         love.graphics.setShader(grayShader);
                     end
+                    if unit.markedForDeath then
+                        love.graphics.setShader(flashShader);
+                        love.graphics.setColor(unit.deathFlash,unit.deathFlash,unit.deathFlash,unit.deathAlpha);
+                    end
                     love.graphics.draw(unit.img,(j-1)*50 + unit.xoff,(i-1)*50 + unit.yoff);
+                    love.graphics.setColor(1,1,1,1);
                     love.graphics.setShader();
                 end
             end
@@ -165,6 +171,12 @@ Map = function(filename)
     end
     map.unitAt = function(x,y)
         return map.cells[y][x].occupant;
+    end
+    map.removeUnit = function(unit)
+        map.units.removeItem(unit);
+        map.enemyUnits.removeItem(unit);
+        map.playerUnits.removeItem(unit);
+        map.cells[unit.y][unit.x].occupant = nil;
     end
     map.moveUnitTo = function(unit,destX,destY) 
         map.cells[unit.y][unit.x].occupant = nil;

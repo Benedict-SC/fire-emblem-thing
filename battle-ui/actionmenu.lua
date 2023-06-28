@@ -127,7 +127,7 @@ ActionMenu = function(unit)
     end
     am.toggleAttackRanges = function()
         local show = am.cursorPosition ~= 0 and am.options[am.cursorPosition].name == "Attack";
-        DEBUG_TEXT = "show is " .. (show and "true" or "false");
+        --DEBUG_TEXT = "show is " .. (show and "true" or "false");
         --show = show and am.options[am.cursorPosition].name == "Staff"; --or something
         game.battle.clearOverlays();
         if show then

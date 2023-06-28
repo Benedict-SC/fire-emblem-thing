@@ -45,6 +45,15 @@ weaponCache["BraveSword"].rank = "B";
 weaponCache["BraveSword"].weight = 16;
 weaponCache["BraveSword"].maxUses = 30;
 
+weaponCache["TrashSword"] = Weapon();
+weaponCache["TrashSword"].name = "Trash Sword";
+weaponCache["TrashSword"].wtype = "SWORD";
+weaponCache["TrashSword"].iconfile = "assets/img/sword.png";
+weaponCache["TrashSword"].might = 3;
+weaponCache["TrashSword"].hit = 30;
+weaponCache["TrashSword"].weight = 5;
+weaponCache["TrashSword"].maxUses = 2;
+
 --LANCES
 weaponCache["IronLance"] = Weapon();
 weaponCache["IronLance"].name = "Iron Lance";

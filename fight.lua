@@ -16,18 +16,18 @@ Fight = function(aggressor,defender)
             love.graphics.print(fight.def.getEquippedWeapon().name,18,180);
         end
         love.graphics.setColor(0,0,0,1);
-        love.graphics.print(fight.aHP,fiteSites[1],fiteHites[1]);
+        love.graphics.print(fight.aHP,fiteSites[3],fiteHites[1]);
         love.graphics.print(" HP",fiteSites[2],fiteHites[1]);
-        love.graphics.print(fight.dHP == -1 and "--" or fight.dHP,fiteSites[3],fiteHites[1]);
-        love.graphics.print(fight.aDmg,fiteSites[1],fiteHites[2]);
+        love.graphics.print(fight.dHP == -1 and "--" or fight.dHP,fiteSites[1],fiteHites[1]);
+        love.graphics.print(fight.aDmg,fiteSites[3],fiteHites[2]);
         love.graphics.print("Dmg",fiteSites[2],fiteHites[2]);
-        love.graphics.print(fight.dDmg == -1 and "--" or fight.dDmg,fiteSites[3],fiteHites[2]);
-        love.graphics.print(fight.aHit,fiteSites[1],fiteHites[3]);
+        love.graphics.print(fight.dDmg == -1 and "--" or fight.dDmg,fiteSites[1],fiteHites[2]);
+        love.graphics.print(fight.aHit,fiteSites[3],fiteHites[3]);
         love.graphics.print("Hit",fiteSites[2],fiteHites[3]);
-        love.graphics.print(fight.dHit == -1 and "--" or fight.dHit,fiteSites[3],fiteHites[3]);
-        love.graphics.print(fight.aCrit,fiteSites[1],fiteHites[4]);
+        love.graphics.print(fight.dHit == -1 and "--" or fight.dHit,fiteSites[1],fiteHites[3]);
+        love.graphics.print(fight.aCrit,fiteSites[3],fiteHites[4]);
         love.graphics.print("Crit",fiteSites[2],fiteHites[4]);
-        love.graphics.print(fight.dCrit == -1 and "--" or fight.dCrit,fiteSites[3],fiteHites[4]);
+        love.graphics.print(fight.dCrit == -1 and "--" or fight.dCrit,fiteSites[1],fiteHites[4]);
         love.graphics.setColor(1,1,1,1);
     end
     fight.calculateDamage = function(attacker)
@@ -79,12 +79,11 @@ Fight = function(aggressor,defender)
 
     end
     fight.attackSpeed = function(unit,weapon)
-        local a = attacker and fight.agg or fight.def;
-        local aw = a.getEquippedWeapon();
-        if not aw then return a.spd; end --if no weapon, no weight malus
-        local aWeightMalus = aw.weight - a.str; --a.con???
+        local aw = unit.getEquippedWeapon();
+        if not aw then return unit.spd; end --if no weapon, no weight malus
+        local aWeightMalus = aw.weight - unit.str; --unit.con???
         if aWeightMalus < 0 then aWeightMalus = 0; end
-        return a.spd - aWeightMalus;
+        return unit.spd - aWeightMalus;
     end
     fight.defenderCanCounter = function()
         local dist = manhattan(fight.agg,fight.def);
@@ -100,6 +99,26 @@ Fight = function(aggressor,defender)
     fight.dHit = fight.calculateHit(false);
     fight.aCrit = fight.calculateCrit(true);
     fight.dCrit = fight.calculateCrit(false);
+    fight.hp = function(unit)
+        if unit == fight.agg then return fight.aHP; end
+        if unit == fight.def then return fight.dHP; end
+        return 0;
+    end
+    fight.hit = function(unit)
+        if unit == fight.agg then return fight.aHit; end
+        if unit == fight.def then return fight.dHit; end
+        return 0;
+    end
+    fight.crit = function(unit)
+        if unit == fight.agg then return fight.aCrit; end
+        if unit == fight.def then return fight.dCrit; end
+        return 0;
+    end
+    fight.dmg = function(unit)
+        if unit == fight.agg then return fight.aDmg; end
+        if unit == fight.def then return fight.dDmg; end
+        return 0;
+    end
     if not fight.defenderCanCounter() then
         fight.dDmg = -1;
         fight.dHit = -1;
@@ -127,7 +146,8 @@ Fight = function(aggressor,defender)
     end
     if fight.doTheyDouble(false) then
         fight.turns.push(fight.def);
-        if fight.def.getEquippedWeapon().brave then
+        local wep = fight.def.getEquippedWeapon();
+        if wep and wep.brave then
             fight.turns.push(fight.def);
         end
     end

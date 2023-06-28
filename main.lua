@@ -60,10 +60,9 @@ function love.draw()
 	love.graphics.setFont(DEBUG_FONT);
 	love.graphics.setColor(0,0,0);
 	love.graphics.print(DEBUG_TEXT,3,3);
-	love.graphics.print(controlMode,3,17);
 	love.graphics.setColor(1,1,1);
 	love.graphics.print(DEBUG_TEXT,2,2);
-	love.graphics.print(controlMode,2,16);
+	--love.graphics.print(controlMode,2,16);
     
 	--finish framerate limiting
 	local frametime = love.timer.getTime() - start;

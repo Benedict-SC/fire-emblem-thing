@@ -86,16 +86,24 @@ FightScreen = function(fight)
 
         love.graphics.setColor(1,1,1,1);
 
-        if fs.goer ~= fs.fight.agg then
+        if (fs.goer ~= fs.fight.agg) and not fs.someoneDying then
             love.graphics.setShader(flashShader);
             love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,1);
+        end
+        if (fs.someoneDying == fs.fight.agg) then
+            love.graphics.setShader(flashShader);
+            love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,fs.deathAlpha);
         end
         fs.fight.agg.anim.draw(171,156,0,1,1);
         love.graphics.setShader();
         love.graphics.setColor(1,1,1,1);
-        if fs.goer == fs.fight.agg then
+        if (fs.goer == fs.fight.agg) and not fs.someoneDying then
             love.graphics.setShader(flashShader);
             love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,1);
+        end
+        if (fs.someoneDying == fs.fight.def) then
+            love.graphics.setShader(flashShader);
+            love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,fs.deathAlpha);
         end
         fs.fight.def.anim.draw(362 + fs.fight.def.anim.width(),156,0,-1,1);
         love.graphics.setShader();
@@ -131,7 +139,8 @@ FightScreen = function(fight)
     end
     fs.initializeAttack = function()
         fs.goer = fs.fight.turns[fs.turnIndex];
-        if fs.goer.getEquippedWeapon().currentUses <= 0 then --TODO: check if goer is immobilized somehow, too
+        local wep = fs.goer.getEquippedWeapon();
+        if wep and wep.currentUses <= 0 then --TODO: check if goer is immobilized somehow, too
             fs.startNextTurn();
         end
         if fs.goer == fs.fight.agg then
@@ -148,26 +157,41 @@ FightScreen = function(fight)
     end
     fs.impact = function()
         fs.state = "POSTIMPACT";
-        fs.goer.anim.playOnceAndThen("recoil",function()
-            fs.goer.anim.setAnimation("done");
-        end)
-        local startHP = fs.notGoer.hp; --TODO: calculate this properly
-        local endHP = fs.notGoer.hp - fs.goDmg;
-        if endHP < 0 then 
-            endHP = 0; 
-        end
-        local totalDealt = startHP - endHP;
-        async.doOverTime(0.5,function(percent) 
-            fs.hitflash = 1- math.abs(percent * 2 - 1);
-        end,function()
-            fs.hitflash = 0;
+        local hitter = fs.goer; --make sure the reference to the animation is right even if who's going changes
+        hitter.anim.playOnceAndThen("recoil",function()
+            hitter.anim.setAnimation("done");
         end);
-        async.doOverTime(1,function(percent) 
-            fs.notGoer.hp = math.floor(endHP + ((1-percent)*totalDealt) + 0.5);
-        end,function() 
-            fs.notGoer.hp = endHP;
-            fs.startNextTurn();
-        end)
+        local hits = fs.fight.hit(fs.goer);
+        local rand = random099();
+        if rand < hits then 
+            local gotHit = fs.notGoer;
+            gotHit.anim.playOnceAndThen("ouch", function()
+                gotHit.anim.setAnimation("idle");
+            end);
+            local startHP = fs.notGoer.hp; --TODO: calculate this properly
+            local endHP = fs.notGoer.hp - fs.goDmg;
+            if endHP < 0 then 
+                endHP = 0; 
+            end
+            local totalDealt = startHP - endHP;
+            async.doOverTime(0.5,function(percent) 
+                fs.hitflash = 1- math.abs(percent * 2 - 1);
+            end,function()
+                fs.hitflash = 0;
+            end);
+            async.doOverTime(1,function(percent) 
+                fs.notGoer.hp = math.floor(endHP + ((1-percent)*totalDealt) + 0.5);
+            end,function() 
+                fs.notGoer.hp = endHP;
+                fs.startNextTurn();
+            end);
+        else
+            local dodged = fs.notGoer;
+            dodged.anim.playOnceAndThen("dodge", function()
+                dodged.anim.setAnimation("idle");
+            end);
+            async.wait(1,fs.startNextTurn);
+        end
     end
     fs.startNextTurn = function()
         fs.turnIndex = fs.turnIndex + 1;
@@ -179,7 +203,29 @@ FightScreen = function(fight)
         end
     end
     fs.endCombat = function()
-        fs.transitionOut();
+        if fs.fight.agg.hp <= 0 or fs.fight.def.hp <= 0 then
+            if fs.fight.agg.hp <= 0 then
+                fs.someoneDying = fs.fight.agg;
+            else
+                fs.someoneDying = fs.fight.def;
+            end
+            fs.deathAlpha = 1;
+            --if fs.someoneDying.deathquote then --TODO: combat dialogue trigger
+            async.doOverTime(0.5,function(percent) 
+                fs.hitflash = 1- math.abs(percent * 2 - 1);
+                if percent > 0.5 then
+                    fs.deathAlpha = 1 - ((percent-0.5) * 2);
+                else
+                    fs.deathAlpha = 1;
+                end
+            end,function()
+                fs.hitflash = 0;
+                fs.deathAlpha = 0;
+                async.wait(0.4,fs.transitionOut);
+            end);
+        else
+            fs.transitionOut();
+        end
     end
     fs.transitionOut = function()
         fs.state = "SPINOUT";

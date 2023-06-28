@@ -2,12 +2,15 @@ Battle = function(mapfile)
     local battle = {};
     battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY
     battle.map = Map(mapfile);
+    battle.displayStuff = Array();
+    battle.camera = BattleCam();
+
     battle.selector = love.graphics.newImage("assets/img/selector.png");
     battle.selectorPos = {x=5,y=5};
-    battle.displayStuff = Array();
     battle.units = battle.map.units;
     battle.casualties = Array();
-    battle.camera = BattleCam();
+    battle.activeFaction = #(battle.map.factionOrder);
+
     battle.render = function()
         love.graphics.pushCanvas(battle.map.drawCanvas);
         battle.map.renderTerrain();
@@ -192,36 +195,79 @@ Battle = function(mapfile)
     end
     --SECTION: EXTERNAL CONTROL
     battle.resolveFight = function()
-        local unit = battle.fightScreen.fight.agg;
-        --TODO: Actually do end-of-combat housekeeping here.
-        if unit.doesCanto() then
-
+        local target = battle.fightScreen.fight.def;
+        if target.hp <= 0 then
+            battle.killUnit(target,battle.resolveAttackerEffects);
         else
-            unit.used = true;
-            --TODO: check if the turn is over and change phases if so
-            battle.state = "MAINPHASE";
+            battle.resolveAttackerEffects();
+        end
+    end
+    battle.resolveAttackerEffects = function()
+        local unit = battle.fightScreen.fight.agg;
+        if unit.hp <= 0 then --whoops, kill 'em
+            battle.killUnit(unit,function() 
+                battle.state = "MAINPHASE";
+            end);
+        else --they're alive!
+            if unit.doesCanto() then
+
+            else
+                unit.used = true;
+                --TODO: check if the turn is over and change phases if so
+                battle.state = "MAINPHASE";
+            end
         end
     end
     battle.changePhase = function()
+        battle.map.units.forEach(function(x) 
+            x.used = false;
+        end);
+        battle.activeFaction = battle.activeFaction + 1;
+        if battle.activeFaction > #(battle.map.factionOrder) then battle.activeFaction = 1; end
         battle.state = "DISPLAY";
         battle.displayStuff = Array();
-        local phaseText = love.graphics.newImage("assets/img/phase-player.png");
+        local faction = battle.map.factionOrder[battle.activeFaction];
+        local factionBannerUrl = "assets/img/phase-other.png";
+        if faction == "PLAYER" then
+            factionBannerUrl = "assets/img/phase-player.png"
+        elseif faction == "ENEMY" then
+            factionBannerUrl = "assets/img/phase-enemy.png"
+        end
+        local phaseText = love.graphics.newImage(factionBannerUrl);
+
         local ptThing = {};
         ptThing.drawable = phaseText;
         ptThing.x = -400;
         ptThing.y = 100;
         battle.displayStuff.push(ptThing);
-        async.doOverTime(0.4,function(percent) 
+        async.doOverTime(0.3,function(percent) 
             ptThing.x = -400 + math.floor(percent * 500 + 0.5);
         end,function() 
-            async.wait(1.2,function()
-                async.doOverTime(0.4,function(percent) 
+            async.wait(1.0,function()
+                async.doOverTime(0.3,function(percent) 
                     ptThing.x = 100 + math.floor(percent * 500 + 0.5);
                 end,function() 
                     battle.state = "MAINPHASE";
                 end)
             end);
         end)
+    end
+    battle.killUnit = function(unit,whendone)
+        battle.casualties.push(unit);
+        unit.markedForDeath = true;
+        unit.deathFlash = 0;
+        unit.deathAlpha = 1;
+        async.doOverTime(0.5,function(percent) 
+            unit.deathFlash = 1- math.abs(percent * 2 - 1);
+            if percent > 0.5 then
+                unit.deathAlpha = 1 - ((percent-0.5) * 2);
+            else
+                unit.deathAlpha = 1;
+            end
+        end,function() 
+            battle.map.removeUnit(unit);
+            whendone();
+        end);
     end
     --SECTION: MOVEMENT STATE PATHFINDING
     battle.resetPathing = function()
