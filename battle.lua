@@ -56,12 +56,15 @@ Battle = function(mapfile)
                     game.statspage.unit = occ;
                     game.statspage.setAlignment(occ.faction);
                     game.state = "STATS";
+                elseif controlMode == "MOUSE" then --you've right-clicked but the square is empty
+                    battle.globalMenu = BlankMenu(battle.selectorPos.x,battle.selectorPos.y);
+                    battle.state = "GLOBALMENU";
                 end
             elseif(battle.input_select()) then --We've clicked on a specific map square to take some action on it
                 local occ = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
-                if occ and not occ.used then --we've clicked a unit, so we're going to get its range set up and change states to the PATHING state.
+                if occ and not occ.used and occ.faction == battle.map.factionOrder[battle.activeFaction] then --we've clicked an unused friendly unit, so we're going to get its range set up and change states to the PATHING state.
                     battle.pathfind(occ);
-                else
+                elseif controlMode ~= "MOUSE" then --we've selected an empty square, an enemy, or a used unit, and should pull up the map menu.
                     battle.globalMenu = BlankMenu(battle.selectorPos.x,battle.selectorPos.y);
                     battle.state = "GLOBALMENU";
                 end
@@ -206,15 +209,14 @@ Battle = function(mapfile)
         local unit = battle.fightScreen.fight.agg;
         if unit.hp <= 0 then --whoops, kill 'em
             battle.killUnit(unit,function() 
-                battle.state = "MAINPHASE";
+                battle.endUnitsTurn(unit);
             end);
         else --they're alive!
             if unit.doesCanto() then
 
             else
-                unit.used = true;
                 --TODO: check if the turn is over and change phases if so
-                battle.state = "MAINPHASE";
+                battle.endUnitsTurn(unit);
             end
         end
     end
@@ -224,6 +226,7 @@ Battle = function(mapfile)
         end);
         battle.activeFaction = battle.activeFaction + 1;
         if battle.activeFaction > #(battle.map.factionOrder) then battle.activeFaction = 1; end
+
         battle.state = "DISPLAY";
         battle.displayStuff = Array();
         local faction = battle.map.factionOrder[battle.activeFaction];
@@ -268,6 +271,30 @@ Battle = function(mapfile)
             battle.map.removeUnit(unit);
             whendone();
         end);
+    end
+    battle.endUnitsTurn = function(unit)
+        unit.used = true;
+        if battle.map.factionOrder[battle.activeFaction] == "PLAYER" then
+            local unused = battle.map.playerUnits.filter(function(x) 
+                return not x.used;
+            end);
+            if #unused <= 0 then
+                battle.changePhase();
+            else 
+                battle.state = "MAINPHASE";
+            end
+        elseif battle.map.factionOrder[battle.activeFaction] == "ENEMY" then
+            local unused = battle.map.enemyUnits.filter(function(x) 
+                return not x.used;
+            end);
+            if #unused <= 0 then
+                battle.changePhase();
+            else 
+                battle.state = "MAINPHASE"; --TODO: queue up next AI turn, actually
+            end
+        else
+            
+        end
     end
     --SECTION: MOVEMENT STATE PATHFINDING
     battle.resetPathing = function()

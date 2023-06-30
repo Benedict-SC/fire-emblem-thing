@@ -144,7 +144,7 @@ Fight = function(aggressor,defender)
             fight.turns.push(fight.agg);
         end
     end
-    if fight.doTheyDouble(false) then
+    if fight.defenderCanCounter() and fight.doTheyDouble(false) then
         fight.turns.push(fight.def);
         local wep = fight.def.getEquippedWeapon();
         if wep and wep.brave then
