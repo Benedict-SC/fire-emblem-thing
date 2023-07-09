@@ -9,6 +9,9 @@ Array = function(...)
 	return arrayify(arr);
 end
 arrayify = function(bareArray)
+	if bareArray == nil then
+		return nil;
+	end
     bareArray.size = #bareArray;
 	bareArray.push = function(el)
 		bareArray.size = bareArray.size + 1;

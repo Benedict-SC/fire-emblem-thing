@@ -13,7 +13,9 @@
     "enemyUnits":[
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 3-5","x":3,"y":5,"mov":5,
         "presetWeapons":["IronLance"],"hp":10},
-        {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Special Boy 7-4","def":10,"x":7,"y":4,"mov":5,"presetWeapons":["SteelLance","Javelin"],"hp":14},
+        {"mapSpriteFile":"assets/img/specialboy.png","classPreset":"Soldier","name":"Special Boy",
+            "def":10,"x":7,"y":4,"mov":5,"presetWeapons":["SteelLance","Javelin"],"hp":14,
+            "talks":[{"name":"Protag-san","convoFile":"recruitTest"}]},
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Specialer Boy 8-5","def":10,"x":8,"y":5,"mov":5,"presetWeapons":["Javelin","SteelLance"],"hp":18},
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 7-6","x":7,"y":6,"mov":5,"presetWeapons":["IronLance"],"hp":10},
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","name":"Soldier 6-3","x":6,"y":3,"mov":5,"presetWeapons":["IronLance"],"hp":10,"spd":2},
@@ -23,7 +25,11 @@
         {"mapSpriteFile":"assets/img/soldier.png","classPreset":"Soldier","x":9,"y":8,"mov":5,"presetWeapons":["IronLance"],"presetItems":["Vulnerary"],"hp":10}        
     ],
     "playerUnits":[
-        {"mapSpriteFile":"assets/img/hero.png","portraitFile":"assets/img/heroport.png","classPreset":"Lord","name":"Protag-san","x":4,"y":7,"mov":7,"presetWeapons":["IronSword","BraveSword","TrashSword"],"presetItems":["Vulnerary"],"hp":15},
+        {"mapSpriteFile":"assets/img/hero.png","portraitFile":"assets/img/heroport.png","classPreset":"Lord","name":"Protag-san",
+            "x":4,"y":7,"presetWeapons":["IronSword","BraveSword","TrashSword"],"presetItems":["Vulnerary"],
+            "hp":15,"mov":7,
+            "talks":[{"name":"Special Boy","convoFile":"recruitTest"}]
+        },
         {"mapSpriteFile":"assets/img/mage.png","portraitFile":"assets/img/heroport.png","classPreset":"Shaman","name":"Edgy Mage","x":3,"y":8,"mov":7,"presetWeapons":["Flux"],"presetItems":["Vulnerary"],"hp":8},
         {"mapSpriteFile":"assets/img/archer.png","portraitFile":"assets/img/archerport.png","classPreset":"Archer","name":"Cool Archer","x":5,"y":8,"mov":7,"presetWeapons":["IronBow"],"presetItems":["Vulnerary"],"hp":12,"str":16,"spd":7,"skl":10}
     ]

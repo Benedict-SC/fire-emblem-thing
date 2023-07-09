@@ -40,6 +40,8 @@ require("unitclass")
 require("templateunit");
 require("activeunit");
 require("menubox");
+require("textbox");
+require("convo");
 require("battle");
 require("battle-ui.battlecam");
 require("battle-ui.actionmenu");

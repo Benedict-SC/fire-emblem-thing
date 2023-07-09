@@ -10,6 +10,14 @@ ActionMenu = function(unit)
     am.options = Array();
     am.unit = unit;
     --let's populate the options
+    --GENERAL USE
+    local adjCells = game.battle.map.getAdjacentCells(am.unit.x,am.unit.y);
+    local adjUnits = adjCells.filter(function(x) 
+        return x.occupant;
+    end);
+    adjUnits = adjUnits.map(function(x) 
+        return x.occupant;
+    end);
     --ATTACK
     local attackranges = unit.getWeaponRanges();
     am.cellsToCheckForAttackables = game.battle.map.getCellsInRanges(unit.x,unit.y,attackranges);
@@ -28,6 +36,21 @@ ActionMenu = function(unit)
             game.battle.state = "PICKWEAPON";
         end
         am.options.push(attackOption);
+    end
+    --TALK
+    local talkTargets = adjUnits.filter(function(x) 
+        local justNames = am.unit.talks.map(function(y) 
+            return y.name;
+        end);
+        return justNames.has(x.name);
+    end);
+    if #talkTargets >= 1 then
+        local talkOption = {name="Talk"};
+        talkOption.onPick = function()
+            game.battle.convo = Convo("recruitTest"); --TODO: fix convo data structure and actually retrieve it, then make a function in battle that does this
+            game.battle.state = "TALK";
+        end
+        am.options.push(talkOption);
     end
     --TRADE
     --SHOVE

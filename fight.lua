@@ -1,5 +1,6 @@
 require("menubox");
 fightUIBG = love.graphics.newImage("assets/img/combat-preview.png");
+fightX2Icon = love.graphics.newImage("assets/img/x2.png");
 fiteHites = {57,88,124,158}; --y
 fiteSites = {22,55,92}; --x
 Fight = function(aggressor,defender)
@@ -29,6 +30,12 @@ Fight = function(aggressor,defender)
         love.graphics.print("Crit",fiteSites[2],fiteHites[4]);
         love.graphics.print(fight.dCrit == -1 and "--" or fight.dCrit,fiteSites[1],fiteHites[4]);
         love.graphics.setColor(1,1,1,1);
+        if fight.doTheyDouble(true) then 
+            love.graphics.draw(fightX2Icon,fiteSites[3]+17,fiteHites[2]+9);
+        end
+        if fight.doTheyDouble(false) then 
+            love.graphics.draw(fightX2Icon,fiteSites[1]+17,fiteHites[2]+9);
+        end
     end
     fight.calculateDamage = function(attacker)
         local a = attacker and fight.agg or fight.def;

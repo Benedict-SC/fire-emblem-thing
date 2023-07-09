@@ -1,6 +1,6 @@
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY
+    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK
     battle.map = Map(mapfile);
     battle.displayStuff = Array();
     battle.camera = BattleCam();
@@ -38,7 +38,9 @@ Battle = function(mapfile)
         if (battle.state == "COMBAT") then
             battle.fightScreen.render();
         end
-
+        if battle.state == "TALK" then
+            battle.convo.render();
+        end
         if battle.state == "DISPLAY" then
             for i=1,#(battle.displayStuff),1 do
                 local thing = battle.displayStuff[i];

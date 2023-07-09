@@ -169,6 +169,22 @@ Map = function(filename)
     map.cellFromNode = function(node)
         return map.cells[node.y][node.x];
     end
+    map.getAdjacentCells = function(x,y)
+        local adjs = Array();
+        if (x-1 >= 1) and (x-1 <= #(map.cells[1])) and (y >= 1) and (y <= #(map.cells)) then
+            adjs.push(map.cells[y][x-1]);
+        end
+        if (x+1 >= 1) and (x+1 <= #(map.cells[1])) and (y >= 1) and (y <= #(map.cells)) then
+            adjs.push(map.cells[y][x+1]);
+        end
+        if (x >= 1) and (x <= #(map.cells[1])) and (y-1 >= 1) and (y-1 <= #(map.cells)) then
+            adjs.push(map.cells[y-1][x]);
+        end
+        if (x >= 1) and (x <= #(map.cells[1])) and (y+1 >= 1) and (y+1 <= #(map.cells)) then
+            adjs.push(map.cells[y+1][x]);
+        end
+        return adjs;
+    end
     map.unitAt = function(x,y)
         return map.cells[y][x].occupant;
     end

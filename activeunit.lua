@@ -25,6 +25,8 @@ ActiveUnit = function(unitdata)
     unit.level = 1;
     unit.exp = 0;
 
+    unit.talks = arrayify(unitdata.talks);
+
     unit.doesCanto = function()
         return unit.class.mounted; --TODO: check if they have a canto skill or item or something
     end
