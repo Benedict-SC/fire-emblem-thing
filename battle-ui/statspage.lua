@@ -5,7 +5,7 @@ StatsPage = function()
     sp.alignment = 1; -- 1=ally, 2=enemy, 3=other
     sp.unit = ActiveUnit({type="soldier"});
     sp.unitList = {sp.unit};
-    sp.statfont = love.graphics.newFont("assets/font/arial.ttf", 20);
+    sp.statfont = Fonts.getFont("arial", 20);
     sp.render = function()
         if sp.alignment == 1 then
             love.graphics.draw(sp.bg,0,0);

@@ -1,7 +1,7 @@
 blankMenuImg = love.graphics.newImage("assets/img/blankmenu.png");
 blankMenuCursor = love.graphics.newImage("assets/img/actionmenu_cursor.png");
 blankMenuOptionHeight = 23;
-blankMenuFont = love.graphics.newFont("assets/font/arial.ttf", 17);
+blankMenuFont = Fonts.getFont("arial",17);
 BlankMenu = function(x,y)
     local am = {};
     am.unit = {x=x,y=y};

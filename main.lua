@@ -27,9 +27,11 @@ DEBUG_FONT = love.graphics.getFont();
 require("thirdparty.json4lua");
 require("thirdparty.tablecopy");
 require("utilities.util");
+require("utilities.font");
 require("utilities.shaders");
 require("utilities.async");
-require("utilities.input");
+require("utilities.legacy-s5.input");
+require("utilities.legacy-s5.textformatter");
 require("utilities.path");
 require("utilities.canvas");
 require("utilities.animation");
@@ -51,6 +53,7 @@ require("battle-ui.fightscreen");
 require("game");
 game = Game();
 game.init();
+
 function love.draw()
     --first: framerate limit
 	local start = love.timer.getTime();
@@ -61,9 +64,9 @@ function love.draw()
     game.render();
 	love.graphics.setFont(DEBUG_FONT);
 	love.graphics.setColor(0,0,0);
-	love.graphics.print(DEBUG_TEXT,3,3);
+	love.graphics.printf(DEBUG_TEXT,3,3,590);
 	love.graphics.setColor(1,1,1);
-	love.graphics.print(DEBUG_TEXT,2,2);
+	love.graphics.printf(DEBUG_TEXT,2,2,590);
 	--love.graphics.print(controlMode,2,16);
     
 	--finish framerate limiting

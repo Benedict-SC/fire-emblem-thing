@@ -3,7 +3,7 @@ require("fight");
 pickWeaponImg = love.graphics.newImage("assets/img/sliceablemenu.png");
 pickWeaponCursor = love.graphics.newImage("assets/img/unbounded-cursor.png");
 pickWeaponOptionHeight = 23;
-pickWeaponFont = love.graphics.newFont("assets/font/arial.ttf", 17);
+pickWeaponFont = Fonts.getFont("arial", 17);
 PickWeapon = function(unit)
     local pw = {};
     pw.img = actionMenuImg;

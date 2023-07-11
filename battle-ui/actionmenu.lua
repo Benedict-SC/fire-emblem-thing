@@ -2,7 +2,7 @@ require("battle-ui.pickweapon");
 actionMenuImg = love.graphics.newImage("assets/img/sliceablemenu.png");
 actionMenuCursor = love.graphics.newImage("assets/img/actionmenu_cursor.png");
 actionMenuOptionHeight = 23;
-actionMenuFont = love.graphics.newFont("assets/font/arial.ttf", 17);
+actionMenuFont = Fonts.getFont("arial", 17);
 ActionMenu = function(unit)
     local am = {};
     am.box = MenuBox(actionMenuImg,10);

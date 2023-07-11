@@ -18,3 +18,12 @@ grayShader = love.graphics.newShader[[
     return vec4(hue,hue,hue,pixel.a);
   }
 ]]
+textColorShader = love.graphics.newShader[[
+  vec4 effect( vec4 color, Image texture, vec2 texpoint, vec2 screenpoint){
+		vec4 pixel = Texel(texture, texpoint);
+		pixel.r = color.r;
+    pixel.g = color.g;
+    pixel.b = color.b;
+		return pixel;
+	}
+]]

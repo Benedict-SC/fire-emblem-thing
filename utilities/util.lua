@@ -19,7 +19,9 @@ arrayify = function(bareArray)
 	end
 	bareArray.pop = function()
 		local val = bareArray[bareArray.size];
+		bareArray[bareArray.size] = nil;
 		bareArray.size = bareArray.size - 1;
+
 		return val;
 	end
 	bareArray.peek = function()
@@ -127,3 +129,62 @@ signof = function(x)
  random099 = function()
 	return math.floor(math.random() * 100);
  end
+ --here's some legacy string processing from s5
+ splitSpaces = function(str,preserveEnds)
+	local tokens = Array();
+	for token in string.gmatch(str, "%S+") do
+		tokens.push(token);
+	end
+	if preserveEnds and tokens[1] then 
+		if str:sub(1,1) == " " then
+			tokens[1] = " " .. tokens[1];
+		end
+		if str:sub(#str,#str) == " " and #tokens > 0 then
+			tokens[#tokens] = tokens[#tokens].." ";
+		end
+	end
+	return tokens;
+end
+countWords = function(str)
+	local num = 0;
+	for token in string.gmatch(str, "%S+") do
+		num = num + 1;
+	end
+	return num;
+end
+capitalize = function(str)
+	if #str == 1 then 
+		return str:upper();
+	elseif #str == 0 then
+		return str;
+	else
+		return str:sub(1,1):upper() .. str:sub(2); 
+	end
+end
+trimSpaces = function(str)
+	str = trimLeadingSpaces(str);
+	while str:sub(#str,#str) == " " do
+		str = str:sub(1,#str-1);
+	end
+	return str;
+end
+trim = function(str)
+	-- from PiL2 20.4
+	return str:gsub("^%s*(.-)%s*$", "%1");
+end
+trimLeadingSpaces = function(str)
+	while str:sub(1,1) == " " do
+		str = str:sub(2);
+	end
+	return str;
+end
+subArray = function(array,startIndex,length)
+	startIndex = startIndex or 1;
+	maxIndex = startIndex - 1 + length;
+	local subarray = Array();
+	if maxIndex > #array then maxIndex = #array; end
+	for i=startIndex,maxIndex,1 do
+		subarray.push(array[i]);
+	end
+	return subarray;
+end
