@@ -11,8 +11,23 @@ Convo = function(convoFile)
 		end
 	end
     c.box = TextBox();
+    c.start = function()
+        c.box.rise();
+    end
     c.render = function()
         c.box.render();
+    end
+    c.update = function()
+        if c.box.state == "WRITE" then
+            local mouseinput = pressedThisFrame.mouse1;
+            local otherinput = pressedThisFrame.action;
+            if mouseinput or otherinput then
+                c.box.state = "TRANSITION";
+                c.box.fall(function()
+                    game.battle.endUnitsTurn(game.battle.actionMenu.unit);
+                end);
+            end
+        end
     end
     return c;
 end

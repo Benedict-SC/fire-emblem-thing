@@ -1,9 +1,11 @@
 textboxImg = love.graphics.newImage("assets/img/textbg.png");
 TextBox = function()
     local tb = {};
-    tb.box = MenuBox(textboxImg,17,19);
+    tb.state = "TRANSITION"; --WRITE, HOLD, SELECT
     tb.calligrapher = TextDrawer({x=40,y=215,w=500,h=150},nil,120)
+    tb.box = MenuBox(textboxImg,17,19);
     tb.box.resize(gamewidth-50,gameheight-200);
+    tb.box.y = gameheight + 1;
     tb.portraits = Array();
     tb.registerPortrait = function(id,filepath)
         local tbp = TextBoxPortrait(filepath);
@@ -28,8 +30,30 @@ TextBox = function()
         for i=1,#(tb.portraits),1 do
             tb.portraits[i].render();
         end
-        tb.box.draw(25,200);
+        love.graphics.setColor(1,1,1);
+        tb.box.draw(25,tb.box.y);
         tb.calligrapher.draw();
+    end
+    tb.rise = function()
+        async.doOverTime(0.2,function(percent) 
+            tb.box.y = gameheight - math.floor(percent * tb.box.h);
+            DEBUG_TEXT = "moving percent " .. percent;
+        end,function() 
+            tb.box.y = gameheight - tb.box.h;
+            --TODO: actually transition to some functioning write state
+            tb.state = "WRITE"; 
+        end);
+    end
+    tb.fall = function(whendone)
+        async.doOverTime(0.2,function(percent) 
+            tb.box.y = (gameheight - tb.box.h) + math.floor(percent * tb.box.h);
+        end,function() 
+            tb.box.y = gameheight + 1;
+            if whendone then whendone(); end
+        end);
+    end
+    tb.update = function()
+        
     end
     return tb;
 end

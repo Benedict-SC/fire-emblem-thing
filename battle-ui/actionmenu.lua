@@ -39,6 +39,9 @@ ActionMenu = function(unit)
     end
     --TALK
     local talkTargets = adjUnits.filter(function(x) 
+        if not (am.unit.talks) then
+            return false;
+        end
         local justNames = am.unit.talks.map(function(y) 
             return y.name;
         end);
@@ -49,6 +52,7 @@ ActionMenu = function(unit)
         talkOption.onPick = function()
             game.battle.convo = Convo("recruitTest"); --TODO: fix convo data structure and actually retrieve it, then make a function in battle that does this
             game.battle.state = "TALK";
+            game.battle.convo.start();
         end
         am.options.push(talkOption);
     end

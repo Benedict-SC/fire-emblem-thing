@@ -196,6 +196,8 @@ Battle = function(mapfile)
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
             battle.fightScreen.update();
+        elseif (battle.state == "TALK") then
+            battle.convo.update();
         end
     end
     --SECTION: EXTERNAL CONTROL
