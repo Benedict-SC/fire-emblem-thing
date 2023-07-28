@@ -10,20 +10,14 @@ TextBox = function()
     tb.box.resize(gamewidth-50,gameheight-200);
     tb.box.y = gameheight + 1;
     tb.portraits = Array();
-    tb.registerPortrait = function(id,filepath)
-        local tbp = TextBoxPortrait(filepath);
+    tb.registerPortrait = function(id,versions,x,active,reversed)
+        local tbp = TextBoxPortrait(versions);
+        tbp.x = x or 0;
+        tbp.active = active or false;
+        tbp.reversed = reversed or false;
         tb.portraits[id] = tbp;
         tb.portraits.push(tbp);
     end
-
-    -- v TODO: remove after testing:
-    tb.registerPortrait("default","assets/img/herotall.png");
-    tb.portraits["default"].active = true;
-    tb.portraits["default"].lit = true;
-    tb.registerPortrait("archer","assets/img/archtall.png");
-    tb.portraits["archer"].active = true;
-    tb.portraits["archer"].x = 300;
-    -- ^ TODO: remove after testing:
 
     tb.charMax = 0;
 
@@ -42,16 +36,24 @@ TextBox = function()
         end
         love.graphics.setColor(1,1,1);
         tb.box.draw(25,tb.box.y);
-        if tb.calligrapher.fstrings then
-            tb.calligrapher.draw();
+        if tb.state ~= "TRANSITION" then
+            if tb.calligrapher.fstrings then
+                tb.calligrapher.draw();
+            end
         end
     end
     tb.rise = function(whendone)
         async.doOverTime(0.2,function(percent) 
             tb.box.y = gameheight - math.floor(percent * tb.box.h);
+            for k,v in ipairs(tb.portraits) do
+                v.y = gameheight - (percent * v.img:getHeight());
+            end
         end,function() 
             whendone();
             tb.box.y = gameheight - tb.box.h;
+            for k,v in ipairs(tb.portraits) do
+                v.y = gameheight - v.img:getHeight();
+            end
             --TODO: actually transition to some functioning write state
             tb.state = "WRITE"; 
         end);
@@ -59,8 +61,14 @@ TextBox = function()
     tb.fall = function(whendone)
         async.doOverTime(0.2,function(percent) 
             tb.box.y = (gameheight - tb.box.h) + math.floor(percent * tb.box.h);
+            for k,v in ipairs(tb.portraits) do
+                v.y = gameheight - v.img:getHeight() + (percent * gameheight); --this is technically incorrect but unnoticeable and more efficient than polling getHeight() twice probably.
+            end
         end,function() 
             tb.box.y = gameheight + 1;
+            for k,v in ipairs(tb.portraits) do
+                v.y = gameheight + 1
+            end
             if whendone then whendone(); end
         end);
     end
@@ -80,19 +88,36 @@ TextBox = function()
             end
         end
     end
+    tb.highlightOne = function(portId) 
+        for id,port in pairs(tb.portraits) do
+            if not tonumber(id) and type(port) == "table" then --skip the numeric keys
+                port.lit = false;
+                if id == portId then
+                    port.lit = true;
+                end
+            end
+        end
+    end
     return tb;
 end
-TextBoxPortrait = function(filepath)
+TextBoxPortrait = function(versions)
     local tbp = {};
     tbp.x = 0;
-    tbp.y = 0;
+    tbp.y = gameheight;
+    tbp.reversed = false;
     tbp.active = false;
     tbp.lit = false;
-    tbp.img = love.graphics.newImage(filepath);
+    tbp.versions = {};
+    for id,fileid in pairs(versions) do
+        tbp.versions[id] = love.graphics.newImage("assets/img/" .. fileid .. ".png");
+    end
+    tbp.portCode = "default";
+    tbp.img = tbp.versions[tbp.portCode];
     tbp.render = function()
         if not tbp.active then
             return;
         end
+        DEBUG_TEXT = "let's try to render image with width" .. tbp.img:getWidth();
         if tbp.lit then
             love.graphics.setColor(1,1,1);
         else

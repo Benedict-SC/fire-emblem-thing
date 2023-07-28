@@ -11,9 +11,12 @@ Convo = function(convoFile)
 		end
 	end
     c.box = TextBox();
+    for id,port in pairs(c.data.portraits) do
+        c.box.registerPortrait(id,port.versions,port.x,port.active,port.reversed);
+    end
     c.start = function()
-        c.box.rise(function() 
-            c.box.setLine(c.data.lines[c.line]);
+        c.box.rise(function()
+            c.executeLine(c.data.lines[c.line]);
         end);
     end
     c.advance = function() 
@@ -26,13 +29,22 @@ Convo = function(convoFile)
                 c.conclude();
                 return;
             end--else
-            DEBUG_TEXT = "attempting to set line: " .. c.data.lines[c.line].text;
-            c.box.setLine(c.data.lines[c.line]);
+            local newline = c.data.lines[c.line];
+            c.executeLine(newline);
+        end
+    end
+    c.executeLine = function(line)
+        if true then --later there might be lines that don't involve setting a line and writing, like script commands that auto-advance
+            c.box.setLine(line);
             c.box.state = "WRITE";
+        end
+        if line.light then 
+            c.box.highlightOne(line.light);
         end
     end
     c.conclude = function()
         c.box.state = "TRANSITION";
+        c.box.highlightOne(nil);
         c.box.fall(function()
             game.battle.endUnitsTurn(game.battle.actionMenu.unit);
         end);
