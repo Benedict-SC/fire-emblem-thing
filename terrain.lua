@@ -1,5 +1,37 @@
 movementTypes = {"FOOT","HORSE","MAGIC","FLYING"};
-terrain = {
+terrain = Array();
+local terrainJson = love.filesystem.read("defaults/terrain.json");
+local terrainData = json.decode(terrainJson);
+for i=1,#terrainData,1 do
+    local terrainObj = {};
+    terrainObj.name = terrainData[i].name;
+    terrainObj.costs = terrainData[i].costs;
+    terrainObj.costToEnter = function(movtype)
+        local cost = terrainObj.costs[movType];
+        if not cost then 
+            cost = terrainObj.costs["default"];
+        end
+        return cost;
+    end
+    terrain.push(terrainObj);
+end
+nativeTerrainLength = #terrain;
+local customTerrainJson = love.filesystem.read("custom/terrain.json");
+local customTerrainData = json.decode(customTerrainJson);
+for i=1,#customTerrainData,1 do
+    local terrainObj = {};
+    terrainObj.name = customTerrainData[i].name;
+    terrainObj.costs = customTerrainData[i].costs;
+    terrainObj.costToEnter = function(movtype)
+        local cost = terrainObj.costs[movType];
+        if not cost then 
+            cost = terrainObj.costs["default"];
+        end
+        return cost;
+    end
+    terrain.push(terrainObj);
+end
+--[[terrain = {
     {name="Grass",costToEnter = function(movtype) 
         return 1;
     end},
@@ -24,4 +56,4 @@ terrain = {
     {name="HighWall",costToEnter = function(movtype) 
         return 999; --not even flying dudes
     end}
-};
+};]]--
