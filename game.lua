@@ -3,7 +3,7 @@ Game = function()
     local game = {};
     game.tileSize = 50;
     game.init = function()
-        game.battle = Battle("assets/json/testmap.json");
+        game.battle = Battle("custom/maps/testmap.json");
         game.statspage = StatsPage();
         game.state = "BATTLE";
         game.battle.changePhase();
