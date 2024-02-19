@@ -22,7 +22,7 @@ PickWeapon = function(unit)
                 --get the list of units in range of that weapon
                 local cellsInRange = b.map.getCellsInRanges(pw.unit.x,pw.unit.y,opt.range);
                 cellsInRange = cellsInRange.filter(function(x) 
-                    if x.occupant and (x.occupant.friendly ~= pw.unit.friendly) then
+                    if x.occupant and (x.occupant.faction ~= pw.unit.faction) then
                         return true;
                     end
                     return false;

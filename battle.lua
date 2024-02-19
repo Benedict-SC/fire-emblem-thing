@@ -89,14 +89,14 @@ Battle = function(mapfile)
                     battle.state = "ACTION"; --TODO: ACTION
                 elseif node.hittable and not cell.occupant then
                     --that's not a valid movement target
-                elseif node.hittable and cell.occupant and not cell.occupant.friendly then --you're trying to attack an enemy
+                elseif node.hittable and cell.occupant and not battle.moveUnit.friendly(cell.occupant) then --you're trying to attack an enemy
                     --check if the terminus of the path arrow is in range of the occupant
                     --if so, move there, and when done moving there, transition straight to combat preview instead of action
                     --if not, find any marked nodes in range of the target, and select the lowest CSF to move to before transitioning
                 elseif node.hittable and cell.occupant then --occupant is friendly
                     --either do all that stuff from the previous step but go to heal instead if heal is your only 1-range option
                     --otherwise invalid input
-                elseif cell.occupant and cell.occupant.friendly then 
+                elseif cell.occupant and battle.moveUnit.friendly(cell.occupant) then 
                     --whoops, that's just a friend- it'll show up in your movement range but don't try and move there. invalid input.
                 else --you're moving to an empty square. 
                     battle.clearOverlays();
@@ -279,7 +279,7 @@ Battle = function(mapfile)
     battle.endUnitsTurn = function(unit)
         unit.used = true;
         if battle.map.factionOrder[battle.activeFaction] == "PLAYER" then
-            local unused = battle.map.playerUnits.filter(function(x) 
+            local unused = battle.map.playerUnits().filter(function(x) 
                 return not x.used;
             end);
             if #unused <= 0 then
@@ -288,7 +288,7 @@ Battle = function(mapfile)
                 battle.state = "MAINPHASE";
             end
         elseif battle.map.factionOrder[battle.activeFaction] == "ENEMY" then
-            local unused = battle.map.enemyUnits.filter(function(x) 
+            local unused = battle.map.enemyUnits().filter(function(x) 
                 return not x.used;
             end);
             if #unused <= 0 then

@@ -39,7 +39,6 @@ require("weapons");
 require("items");
 require("map");
 require("unitclass")
-require("templateunit");
 require("activeunit");
 require("menubox");
 require("textbox");

@@ -12,9 +12,12 @@ Map = function(filename)
     local map = {};
     map.cells = Array();
     map.units = Array();
-    map.enemyUnits = Array();
-    map.playerUnits = Array();
-    map.otherUnits = Array();
+    map.playerUnits = function()
+        return map.units.filter(function(x) return x.faction == "PLAYER"; end);
+    end
+    map.enemyUnits = function()
+        return map.units.filter(function(x) return x.faction == "ENEMY"; end);
+    end
 
     map.drawCanvas = nil;--love.graphics.newCanvas(); --we need to wait until we have bounds
 
@@ -33,14 +36,9 @@ Map = function(filename)
 
     map.drawCanvas = love.graphics.newCanvas(#map.cells[1] * game.tileSize,#map.cells * game.tileSize);
 
-    --local combinedunits = arrayify(data.enemyUnits);
-    --combinedunits.concatenate(data.playerUnits);
-
-    for i=1,#(data.enemyUnits),1 do
-        local unitdata = data.enemyUnits[i]
+    for i=1,#(data.units),1 do
+        local unitdata = data.units[i]
         local unit = ActiveUnit(unitdata);
-        --unit.faction = "ENEMY"; -- enemy by default
-        --unit.friendly = false; --false by default
         if(unitdata.classPreset) then
             unit.class = classLibrary[unitdata.classPreset];
         end
@@ -62,37 +60,6 @@ Map = function(filename)
         unit.equipFirstWeapon();
         map.cells[unitdata.y][unitdata.x].occupant = unit;
         map.units.push(unit);
-        map.enemyUnits.push(unit);
-    end
-    --the following is temporary- later, load player units from the actual player army setup
-    for i=1,#(data.playerUnits),1 do
-        local unitdata = data.playerUnits[i]
-        local unit = ActiveUnit(unitdata);
-        unit.faction = "PLAYER";
-        unit.friendly = true;
-        if(unitdata.classPreset) then
-            unit.class = classLibrary[unitdata.classPreset];
-        end
-        if(unitdata.presetWeapons) then
-            for j=1,#unitdata.presetWeapons,1 do 
-                local wepon = weaponCache.getInstance(unitdata.presetWeapons[j]);
-                wepon.img = love.graphics.newImage(wepon.iconfile);
-                unit.inventory.push(wepon);
-            end
-        end
-        
-        if(unitdata.presetItems) then
-            for j=1,#unitdata.presetItems,1 do 
-                local item = itemCache.getInstance(unitdata.presetItems[j]);
-                item.img = love.graphics.newImage(item.iconfile);
-                unit.inventory.push(item);
-            end
-        end
-        unit.loadSprites();
-        unit.equipFirstWeapon();
-        map.cells[unitdata.y][unitdata.x].occupant = unit;
-        map.units.push(unit);
-        map.playerUnits.push(unit);
     end
     map.renderTerrain = function()
         for i=1,#(map.cells),1 do
@@ -135,7 +102,7 @@ Map = function(filename)
     map.costToEnter = function(unit,cell) 
         local emptySpaceCost = terrain[cell.terrainType].costToEnter(unit.class.movementType());
         if cell.occupant then
-            if cell.occupant.friendly ~= unit.friendly then
+            if cell.occupant.faction ~= unit.faction then
                 return 999;
             end
         end
@@ -190,8 +157,6 @@ Map = function(filename)
     end
     map.removeUnit = function(unit)
         map.units.removeItem(unit);
-        map.enemyUnits.removeItem(unit);
-        map.playerUnits.removeItem(unit);
         map.cells[unit.y][unit.x].occupant = nil;
     end
     map.moveUnitTo = function(unit,destX,destY) 

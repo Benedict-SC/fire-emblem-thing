@@ -5,8 +5,7 @@ ActiveUnit = function(unitdata)
     unit.mapSpriteFile = unitdata.mapSpriteFile;
     unit.portraitFile = unitdata.portraitFile;
 
-    unit.faction = "ENEMY";
-    unit.friendly = false;
+    unit.faction = unitdata.faction or "ENEMY";
     unit.used = false;
 
     unit.class = UnitClass();
@@ -33,6 +32,11 @@ ActiveUnit = function(unitdata)
 
     unit.inventory = Array();
     unit.equipIdx = 0;
+    unit.friendly = function(otherUnit)
+        local same = unit.faction == otherUnit.faction;
+        local hardCodedOtherPlayerExemption = ((unit.faction == "PLAYER") and (otherUnit.faction == "OTHER"));
+        return same or hardCodedOtherPlayerExemption;
+    end
     unit.getRangeSpan = function(discriminatorFunction)
         if not discriminatorFunction then 
             discriminatorFunction = function() 
@@ -97,23 +101,5 @@ ActiveUnit = function(unitdata)
     unit.xoff = 0; 
     unit.yoff = 0;
 
-    return unit;
-end
-makeActiveFromTemplate = function(tunit)
-    local unit = ActiveUnit({});
-    unit.class = tunit.class;
-    unit.name = tunit.name;
-    unit.faction = tunit.faction;
-    unit.hp = tunit.maxhp;
-    unit.maxhp = tunit.maxhp;
-    unit.str = tunit.str;
-    unit.skl = tunit.skl;
-    unit.luk = tunit.luk;
-    unit.def = tunit.def;
-    unit.res = tunit.res;
-    unit.mov = tunit.mov;
-    unit.con = tunit.con;
-    unit.level = tunit.level;
-    unit.exp = tunit.exp;
     return unit;
 end

@@ -24,7 +24,7 @@ ActionMenu = function(unit)
     local anyHittable = false;
     for i=1,#am.cellsToCheckForAttackables,1 do
         local c = am.cellsToCheckForAttackables[i];
-        if c.occupant and (c.occupant.friendly ~= unit.friendly) then
+        if c.occupant and (c.occupant.faction ~= unit.faction) then
             anyHittable = true;
             break;
         end
