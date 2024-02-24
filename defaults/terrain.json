@@ -1,12 +1,14 @@
 [
     {
         "name":"Grass",
+        "imgPath":"assets/img/grass.png",
         "costs":{
             "default":1
         }
     },
     {
         "name":"Forest",
+        "imgPath":"assets/img/forest.png",
         "costs":{
             "default":2,
             "FLYING":1
@@ -14,6 +16,7 @@
     },
     {
         "name":"Hills",
+        "imgPath":"assets/img/hill.png",
         "costs":{
             "default":3,
             "FLYING":1
@@ -21,6 +24,7 @@
     },
     {
         "name":"Sand",
+        "imgPath":"assets/img/errorfloor.png",
         "costs":{
             "default":2,
             "FLYING":1,
@@ -29,6 +33,7 @@
     },
     {
         "name":"Wall",
+        "imgPath":"assets/img/errorfloor.png",
         "costs":{
             "default":999,
             "FLYING":1
@@ -36,6 +41,7 @@
     },
     {
         "name":"HighWall",
+        "imgPath":"assets/img/errorfloor.png",
         "costs":{
             "default":999
         }
