@@ -1,6 +1,7 @@
 require("menubox");
 fightUIBG = love.graphics.newImage("assets/img/combat-preview.png");
 fightX2Icon = love.graphics.newImage("assets/img/x2.png");
+fightX4Icon = love.graphics.newImage("assets/img/x4.png");
 fiteHites = {57,88,124,158}; --y
 fiteSites = {22,55,92}; --x
 Fight = function(aggressor,defender)
@@ -30,11 +31,29 @@ Fight = function(aggressor,defender)
         love.graphics.print("Crit",fiteSites[2],fiteHites[4]);
         love.graphics.print(fight.dCrit == -1 and "--" or fight.dCrit,fiteSites[1],fiteHites[4]);
         love.graphics.setColor(1,1,1,1);
-        if fight.doTheyDouble(true) then 
-            love.graphics.draw(fightX2Icon,fiteSites[3]+17,fiteHites[2]+9);
+        if fight.doTheyDouble(true) then
+            local icon = fightX2Icon;
+            if(fight.agg.getEquippedWeapon().brave) then
+                icon = fightX4Icon;
+            end
+            love.graphics.draw(icon,fiteSites[3]+17,fiteHites[2]+9);
+        else --if there's a brave weapon it still might double so take that into account
+            if(fight.agg.getEquippedWeapon().brave) then
+                love.graphics.draw(fightX2Icon,fiteSites[3]+17,fiteHites[2]+9);
+            end
         end
         if fight.doTheyDouble(false) then 
-            love.graphics.draw(fightX2Icon,fiteSites[1]+17,fiteHites[2]+9);
+            local icon = fightX2Icon;
+            if(fight.def.getEquippedWeapon().brave) then
+                icon = fightX4Icon;
+            end
+            love.graphics.draw(icon,fiteSites[1]+17,fiteHites[2]+9);
+        else
+            if(fight.def.getEquippedWeapon()) then --again, check if a brave weapon is in play
+                if(fight.def.getEquippedWeapon().brave) then
+                    love.graphics.draw(fightX2Icon,fiteSites[1]+17,fiteHites[2]+9);
+                end
+            end
         end
     end
     fight.calculateDamage = function(attacker)
