@@ -43,7 +43,7 @@ Fight = function(aggressor,defender)
             end
         end
         if fight.doTheyDouble(false) and fight.dDmg > -1 then 
-            local icon = fightX2Icon;
+            local icon = fightX2Icon; 
             if(fight.def.getEquippedWeapon().brave) then
                 icon = fightX4Icon;
             end
