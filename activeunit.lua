@@ -21,7 +21,7 @@ ActiveUnit = function(unitdata)
     unit.res = unitdata.res or 0;
     unit.mov = unitdata.mov or 1;
     unit.con = unitdata.con or 10;
-    unit.level = 1;
+    unit.level = unitdata.level or 1;
     unit.exp = 0;
 
     unit.talks = arrayify(unitdata.talks);

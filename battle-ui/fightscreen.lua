@@ -16,6 +16,7 @@ FightScreen = function(fight)
     if not fight.def.anim then
         fight.def.anim = Animation(fight.def.animFilename);
     end
+    fs.enemyTookDamage = false;
 
     fs.render = function()
         love.graphics.pushCanvas(fs.canvas);
@@ -86,6 +87,7 @@ FightScreen = function(fight)
 
         love.graphics.setColor(1,1,1,1);
 
+        --death animation logic
         if (fs.goer ~= fs.fight.agg) and not fs.someoneDying then
             love.graphics.setShader(flashShader);
             love.graphics.setColor(fs.hitflash,fs.hitflash,fs.hitflash,1);
@@ -108,6 +110,10 @@ FightScreen = function(fight)
         fs.fight.def.anim.draw(362 + fs.fight.def.anim.width(),156,0,-1,1);
         love.graphics.setShader();
         love.graphics.setColor(1,1,1,1);
+        if fs.xpScreen then
+            fs.xpScreen.render();
+            love.graphics.setColor(1,1,1,1);
+        end
         love.graphics.popCanvas();
         love.graphics.draw(fs.canvas,gamewidth/2,gameheight/2,-2*math.pi*fs.spinprog,fs.spinprog,fs.spinprog,gamewidth/2,gameheight/2);
     end
@@ -161,6 +167,7 @@ FightScreen = function(fight)
         hitter.anim.playOnceAndThen("recoil",function()
             hitter.anim.setAnimation("done");
         end);
+        --time to do the combat hit and damage logic!
         local hits = fs.fight.hit(fs.goer);
         local rand = random099();
         if rand < hits then 
@@ -170,6 +177,9 @@ FightScreen = function(fight)
             end);
             local startHP = fs.notGoer.hp; --TODO: calculate this properly
             local endHP = fs.notGoer.hp - fs.goDmg;
+            if (endHP < startHP) and (fs.notGoer.faction == "ENEMY") then --remember whether enemy took damage, for xp calculation purposes
+                fs.enemyTookDamage = true;
+            end
             if endHP < 0 then 
                 endHP = 0; 
             end
@@ -221,10 +231,33 @@ FightScreen = function(fight)
             end,function()
                 fs.hitflash = 0;
                 fs.deathAlpha = 0;
-                async.wait(0.4,fs.transitionOut);
+                async.wait(0.4,fs.allocateExp);
             end);
         else
+            fs.allocateExp();
+        end
+    end
+    fs.allocateExp = function() --this one's a little weird because only player units get XP
+        local playerUnit = nil;
+        local enemyUnit = nil;
+        if fs.fight.agg.faction == "PLAYER" then
+            playerUnit = fs.fight.agg;
+            enemyUnit = fs.fight.def;
+        elseif fs.fight.def.faction == "PLAYER" then
+            playerUnit = fs.fight.def;
+            enemyUnit = fs.fight.agg;
+        end
+        if not playerUnit then --no player units were involved in combat so no XP is awarded
             fs.transitionOut();
+        else
+            if playerUnit.hp <= 0 then --the player unit is dead, so don't bother awarding XP to it
+                fs.transitionOut();
+            else --a player unit survived the combat, so they get some xp. 
+                --how much depends on how the combat went.
+                local xpToAward = fight.calculateXP(playerUnit,enemyUnit.hp <= 0,fs.enemyTookDamage);
+                fs.xpScreen = XPScreen(playerUnit,xpToAward,fs.transitionOut);
+                fs.xpScreen.fadeIn();
+            end
         end
     end
     fs.transitionOut = function()

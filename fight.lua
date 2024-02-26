@@ -42,7 +42,7 @@ Fight = function(aggressor,defender)
                 love.graphics.draw(fightX2Icon,fiteSites[3]+17,fiteHites[2]+9);
             end
         end
-        if fight.doTheyDouble(false) then 
+        if fight.doTheyDouble(false) and fight.dDmg > -1 then 
             local icon = fightX2Icon;
             if(fight.def.getEquippedWeapon().brave) then
                 icon = fightX4Icon;
@@ -102,7 +102,21 @@ Fight = function(aggressor,defender)
         if crit < 0 then crit = 0; end
         if crit > 100 then crit = 100; end
         return crit;
+    end
+    fight.calculateXP = function(player,killed,damaged)
+        if not damaged then return 1; end
 
+        local enemy = fight.agg; --let's guess the player was attacking and then course correct
+        if player == fight.agg then enemy = fight.def; end --good ol' process of elimination
+        local levelDifference = (enemy.level + (20*(enemy.class.tier-1))) - (player.level + (20*(player.class.tier-1)));
+        local modeBonus = 20; --TODO: hook this up to a difficulty setting somehow
+        local baseXP = math.floor((21 + levelDifference)/2 + 0.5);
+
+        if killed then
+            return baseXP + levelDifference + modeBonus; --plus extra stuff if they were a boss or whatever, TODO
+        else
+            return baseXP;
+        end
     end
     fight.attackSpeed = function(unit,weapon)
         local aw = unit.getEquippedWeapon();

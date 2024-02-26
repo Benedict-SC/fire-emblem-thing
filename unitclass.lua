@@ -1,6 +1,7 @@
-UnitClass = function(name,types,mounted,horse,flying,armor,magic,promoted)
+UnitClass = function(name,types,tier,mounted,horse,flying,armor,magic,promoted)
     local class = {};
     class.name = name or "Default";
+    class.tier = tier or 1;
     class.weaponTypes = types or {"LANCE","BOW","SWORD","AXE","ANIMA","DARK","LIGHT","STAFF"};
     class.mounted = mounted or false;
     class.magic = magic or false;
@@ -23,19 +24,19 @@ UnitClass = function(name,types,mounted,horse,flying,armor,magic,promoted)
     return class;
 end
 classLibrary = {
-    Soldier=UnitClass("Soldier",{"LANCE"},false,false,false,false,false,false),
-    Mercenary=UnitClass("Mercenary",{"SWORD"},false,false,false,false,false,false),
-    Myrmidon=UnitClass("Myrmidon",{"SWORD"},false,false,false,false,false,false),
-    Knight=UnitClass("Knight",{"LANCE"},false,false,false,true,false,false),
-    Cavalier=UnitClass("Cavalier",{"SWORD","LANCE"},true,true,false,false,false,false),
-    Fighter=UnitClass("Fighter",{"AXE"},false,false,false,false,false,false),
-    Brigand=UnitClass("Brigand",{"AXE"},false,false,false,false,false,false),
-    Archer=UnitClass("Archer",{"BOW"},false,false,false,false,false,false),
-    Mage=UnitClass("Mage",{"ANIMA"},false,false,false,false,true,false),
-    Cleric=UnitClass("Cleric",{"STAFF"},false,false,false,false,true,false),
-    PegKnight=UnitClass("Pegasus Knight",{"LANCE"},true,false,true,false,false,false),
-    WyvernRider=UnitClass("Wyvern Rider",{"LANCE"},true,false,true,false,false,false),
-    Shaman=UnitClass("Shaman",{"DARK"},false,false,false,false,true,false),
-    Monk=UnitClass("Monk",{"LIGHT"},false,false,false,false,true,false),
-    Lord=UnitClass("Lord",{"SWORD"},false,false,false,false,false,false)
+    Soldier=UnitClass("Soldier",{"LANCE"},1,false,false,false,false,false,false),
+    Mercenary=UnitClass("Mercenary",{"SWORD"},1,false,false,false,false,false,false),
+    Myrmidon=UnitClass("Myrmidon",{"SWORD"},1,false,false,false,false,false,false),
+    Knight=UnitClass("Knight",{"LANCE"},1,false,false,false,true,false,false),
+    Cavalier=UnitClass("Cavalier",{"SWORD","LANCE"},1,true,true,false,false,false,false),
+    Fighter=UnitClass("Fighter",{"AXE"},1,false,false,false,false,false,false),
+    Brigand=UnitClass("Brigand",{"AXE"},1,false,false,false,false,false,false),
+    Archer=UnitClass("Archer",{"BOW"},1,false,false,false,false,false,false),
+    Mage=UnitClass("Mage",{"ANIMA"},1,false,false,false,false,true,false),
+    Cleric=UnitClass("Cleric",{"STAFF"},1,false,false,false,false,true,false),
+    PegKnight=UnitClass("Pegasus Knight",{"LANCE"},1,true,false,true,false,false,false),
+    WyvernRider=UnitClass("Wyvern Rider",{"LANCE"},1,true,false,true,false,false,false),
+    Shaman=UnitClass("Shaman",{"DARK"},1,false,false,false,false,true,false),
+    Monk=UnitClass("Monk",{"LIGHT"},1,false,false,false,false,true,false),
+    Lord=UnitClass("Lord",{"SWORD"},1,false,false,false,false,false,false)
 };

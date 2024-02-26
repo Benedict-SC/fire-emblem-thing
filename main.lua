@@ -49,6 +49,7 @@ require("battle-ui.actionmenu");
 require("battle-ui.blankmenu");
 require("battle-ui.statspage");
 require("battle-ui.fightscreen");
+require("battle-ui.experience");
 require("game");
 game = Game();
 game.init();
