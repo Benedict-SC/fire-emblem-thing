@@ -188,3 +188,4 @@ subArray = function(array,startIndex,length)
 	end
 	return subarray;
 end
+math.tau = math.pi*2;

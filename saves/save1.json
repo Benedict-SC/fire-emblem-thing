@@ -1,0 +1,75 @@
+{
+	"army":[
+		{
+			"id":"protagsan",
+			"mapSpriteFile": "assets/img/hero.png",
+			"portraitFile": "assets/img/heroport.png",
+			"classPreset": "Lord",
+			"name": "Protag-san",
+			"weapons": [
+				"IronSword",
+				"BraveSword",
+				"TrashSword"
+			],
+			"items": [
+				"Vulnerary"
+			],
+			"maxhp": 15,
+			"mov": 7,
+			"str": 3,
+			"skl": 4,
+			"spd": 2,
+			"luk": 2,
+			"def": 2,
+			"res": 1,
+			"con": 10,
+			"level": 1
+		},
+		{
+			"id":"edgymage",
+			"mapSpriteFile": "assets/img/mage.png",
+			"portraitFile": "assets/img/qmark-portrait.png",
+			"classPreset": "Shaman",
+			"name": "Edgy Mage",
+			"mov": 7,
+			"weapons": [
+				"Flux"
+			],
+			"items": [
+				"Vulnerary"
+			],
+			"maxhp": 8,
+			"str": 4,
+			"skl": 2,
+			"spd": 1,
+			"luk": 3,
+			"def": 1,
+			"res": 4,
+			"con": 8,
+			"level": 1
+		},
+		{
+			"id":"coolarcher",
+			"mapSpriteFile": "assets/img/archer.png",
+			"portraitFile": "assets/img/archerport.png",
+			"classPreset": "Archer",
+			"name": "Cool Archer",
+			"mov": 7,
+			"weapons": [
+				"IronBow"
+			],
+			"items": [
+				"Vulnerary"
+			],
+			"maxhp": 19,
+			"str": 16,
+			"spd": 9,
+			"skl": 10,
+			"luk": 2,
+			"def": 7,
+			"res": 4,
+			"con": 10,
+			"level": 10
+		}
+	]
+}

@@ -1,6 +1,6 @@
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "MAINPHASE"; --PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK
+    battle.state = "REPOSITION"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK, REPOSITION, OVERVIEW
     battle.map = Map(mapfile);
     battle.displayStuff = Array();
     battle.camera = BattleCam();
@@ -11,7 +11,10 @@ Battle = function(mapfile)
     battle.casualties = Array();
     battle.activeFaction = #(battle.map.factionOrder);
 
+    battle.repositionCell = nil;
+
     battle.render = function()
+        --DEBUG_TEXT = battle.state;
         love.graphics.pushCanvas(battle.map.drawCanvas);
         battle.map.renderTerrain();
         if battle.state == "PATHING" or battle.state == "MOVING" then
@@ -19,8 +22,14 @@ Battle = function(mapfile)
                 path.renderPathBit(battle.movePath,i);
             end
         end
+        if battle.state == "REPOSITION" or battle.repositionCell then
+            battle.map.renderStartingPositions();
+            if (battle.repositionCell and battle.state == "REPOSITION") then
+                love.graphics.draw(battle.selector,(battle.repositionCell.occupant.x - 1)*game.tileSize,(battle.repositionCell.occupant.y - 1)*game.tileSize)
+            end
+        end
         battle.map.renderUnits();
-        if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" then
+        if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" or battle.state == "REPOSITION" or battle.state == "OVERVIEW" then
             if (battle.selectorPos.x >= 1 and battle.selectorPos.y >= 1) then
                 love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize)
             end
@@ -71,6 +80,87 @@ Battle = function(mapfile)
                     battle.state = "GLOBALMENU";
                 end
                 battle.recenterOnSelector();
+            end
+        elseif (battle.state == "REPOSITION") then
+            battle.updateSelectorPosition();
+            if(battle.input_detail()) then
+                local occ = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
+                if occ then
+                    game.statspage.unit = occ;
+                    game.statspage.setAlignment(occ.faction);
+                    game.state = "STATS";
+                elseif controlMode == "MOUSE" then
+                    if battle.repositionCell then
+                        battle.repositionCell = nil;
+                    else
+                        --TODO: back out to map options menu
+                    end
+                end
+            elseif(battle.input_select()) then 
+                local cell = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x];
+                local occ = cell.occupant;
+                if cell.isStartingPosition then
+                    if battle.repositionCell then
+                        if occ then --we're swapping two units
+                            local mover = battle.repositionCell.occupant;
+                            local movee = occ;
+                            if not (mover == movee) --[[don't swap with yourself--]] then 
+                                battle.state = "DISPLAY";
+                                MoveFX.circleSwapUnits(mover,movee,0.15,function() 
+                                    battle.repositionCell.occupant = movee;
+                                    cell.occupant = mover;
+                                    battle.repositionCell = nil;
+                                    local moverx = mover.x;
+                                    local movery = mover.y;
+                                    mover.x = movee.x;
+                                    mover.y = movee.y;
+                                    movee.x = moverx;
+                                    movee.y = movery;
+                                    battle.state = "REPOSITION";
+                                end);
+                            end
+                        else --we're moving repositionCell.occupant to this cell
+                            local mover = battle.repositionCell.occupant;
+                            battle.state = "DISPLAY";
+                            local target= {x = battle.selectorPos.x,y = battle.selectorPos.y};
+                            MoveFX.circleSwapUnits(mover,target,0.15,function() 
+                                cell.occupant = mover;
+                                battle.repositionCell.occupant = nil;
+                                battle.repositionCell = nil;
+                                mover.x = target.x;
+                                mover.y = target.y;
+                                battle.state = "REPOSITION";
+                            end);
+                        end
+                    elseif occ then 
+                        battle.repositionCell = cell;
+                    else
+                        --nothing here! "nuh-uh" sound
+                    end
+                else
+                    --play some "nuh-uh" sound effect
+                end
+                battle.recenterOnSelector();
+            elseif(battle.input_cancel()) then
+                if battle.repositionCell then
+                    battle.repositionCell = nil;
+                else
+                    --TODO: back out to map options menu
+                end
+            end
+        elseif (battle.state == "OVERVIEW") then
+            battle.updateSelectorPosition();
+            if(battle.input_detail()) then
+                local occ = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
+                if occ then
+                    game.statspage.unit = occ;
+                    game.statspage.setAlignment(occ.faction);
+                    game.state = "STATS";
+                elseif controlMode == "MOUSE" then
+                    --TODO: back out to map options menu
+                end
+            elseif(battle.input_cancel()) then
+                --TODO: back out to map options menu
             end
         elseif (battle.state == "PATHING") then
             battle.updateSelectorPosition();
@@ -278,7 +368,8 @@ Battle = function(mapfile)
     end
     battle.endUnitsTurn = function(unit)
         unit.used = true;
-        if battle.map.factionOrder[battle.activeFaction] == "PLAYER" then
+        local factionName = battle.map.factionOrder[battle.activeFaction];
+        if factionName == "PLAYER" then
             local unused = battle.map.playerUnits().filter(function(x) 
                 return not x.used;
             end);
@@ -287,17 +378,15 @@ Battle = function(mapfile)
             else 
                 battle.state = "MAINPHASE";
             end
-        elseif battle.map.factionOrder[battle.activeFaction] == "ENEMY" then
-            local unused = battle.map.enemyUnits().filter(function(x) 
+        else
+            local unused = battle.map.factionUnits(factionName).filter(function(x) 
                 return not x.used;
             end);
             if #unused <= 0 then
                 battle.changePhase();
             else 
                 battle.state = "MAINPHASE"; --TODO: queue up next AI turn, actually
-            end
-        else
-            
+            end            
         end
     end
     --SECTION: MOVEMENT STATE PATHFINDING

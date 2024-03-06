@@ -35,11 +35,13 @@ require("utilities.legacy-s5.textformatter");
 require("utilities.path");
 require("utilities.canvas");
 require("utilities.animation");
+require("unitdata");
 require("weapons");
 require("items");
 require("map");
-require("unitclass")
+require("unitclass");
 require("activeunit");
+require("movefx");
 require("menubox");
 require("textbox");
 require("convo");

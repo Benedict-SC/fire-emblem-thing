@@ -3,10 +3,11 @@ Game = function()
     local game = {};
     game.tileSize = 50;
     game.init = function()
+        UnitData.loadArmyFromSaveFile("save1.json");
         game.battle = Battle("custom/maps/testmap.json");
         game.statspage = StatsPage();
         game.state = "BATTLE";
-        game.battle.changePhase();
+        --game.battle.changePhase();
     end
     game.render = function()
         if game.state == "BATTLE" then

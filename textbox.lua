@@ -117,7 +117,7 @@ TextBoxPortrait = function(versions)
         if not tbp.active then
             return;
         end
-        DEBUG_TEXT = "let's try to render image with width" .. tbp.img:getWidth();
+        --DEBUG_TEXT = "let's try to render image with width" .. tbp.img:getWidth();
         if tbp.lit then
             love.graphics.setColor(1,1,1);
         else

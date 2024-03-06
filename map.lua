@@ -7,6 +7,7 @@ tiles = {
 }
 moveOverlay = love.graphics.newImage("assets/img/rangeMove.png");
 hitOverlay = love.graphics.newImage("assets/img/rangeHit.png");
+repositionOverlay = love.graphics.newImage("assets/img/startingPosition.png");
 errorImg = love.graphics.newImage("assets/img/qmark.png");
 Map = function(filename)
     local map = {};
@@ -17,6 +18,9 @@ Map = function(filename)
     end
     map.enemyUnits = function()
         return map.units.filter(function(x) return x.faction == "ENEMY"; end);
+    end
+    map.factionUnits = function(factionName)
+        return map.units.filter(function(x) return x.faction == factionName; end);
     end
 
     map.drawCanvas = nil;--love.graphics.newCanvas(); --we need to wait until we have bounds
@@ -35,7 +39,16 @@ Map = function(filename)
     end
 
     map.drawCanvas = love.graphics.newCanvas(#map.cells[1] * game.tileSize,#map.cells * game.tileSize);
-
+    data.units = arrayify(data.units);
+    if data.startingPositions then --all maps should have at least one but some test maps don't
+        map.startingPositions = arrayify(data.startingPositions);
+        for i=1,#(map.startingPositions),1 do
+            local pos = map.startingPositions[i];
+            map.cells[pos.y][pos.x].isStartingPosition = true;
+            love.graphics.draw(repositionOverlay,(pos.x-1)*game.tileSize,(pos.y-1)*game.tileSize);
+        end
+    end
+    UnitData.loadArmyDataToMapData(data.units);
     for i=1,#(data.units),1 do
         local unitdata = data.units[i]
         local unit = ActiveUnit(unitdata);
@@ -66,11 +79,11 @@ Map = function(filename)
             for j=1,#(map.cells[1]),1 do
                 local cell = map.cells[i][j]
                 local tilecode = cell.terrainType;
-                love.graphics.draw(tiles[tilecode],(j-1)*50,(i-1)*50);
+                love.graphics.draw(tiles[tilecode],(j-1)*game.tileSize,(i-1)*game.tileSize);
                 if cell.moveOn then
-                    love.graphics.draw(moveOverlay,(j-1)*50,(i-1)*50);
+                    love.graphics.draw(moveOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 elseif cell.hitOn then
-                    love.graphics.draw(hitOverlay,(j-1)*50,(i-1)*50);
+                    love.graphics.draw(hitOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 end
             end
         end
@@ -78,6 +91,12 @@ Map = function(filename)
             local unit = map.units[i];
             love.graphics.draw
         end]]--
+    end
+    map.renderStartingPositions = function()
+        for i=1,#(map.startingPositions),1 do
+            local pos = map.startingPositions[i];
+            love.graphics.draw(repositionOverlay,(pos.x-1)*game.tileSize,(pos.y-1)*game.tileSize);
+        end
     end
     map.renderUnits = function()
         for i=1,#(map.cells),1 do
@@ -92,7 +111,7 @@ Map = function(filename)
                         love.graphics.setShader(flashShader);
                         love.graphics.setColor(unit.deathFlash,unit.deathFlash,unit.deathFlash,unit.deathAlpha);
                     end
-                    love.graphics.draw(unit.img,(j-1)*50 + unit.xoff,(i-1)*50 + unit.yoff);
+                    love.graphics.draw(unit.img,(j-1)*game.tileSize + unit.xoff,(i-1)*game.tileSize + unit.yoff);
                     love.graphics.setColor(1,1,1,1);
                     love.graphics.setShader();
                 end
@@ -154,6 +173,17 @@ Map = function(filename)
     end
     map.unitAt = function(x,y)
         return map.cells[y][x].occupant;
+    end
+    map.cellContainingUnit = function(unit) --being O(n^2) is the price of units not containing location data
+        for i=1,#(map.cells),1 do
+            for j=1,#(map.cells[1]),1 do
+                local cell = map.cells[i][j];
+                if cell.occupant == unit then
+                    return cell;
+                end
+            end
+        end
+        return nil;
     end
     map.removeUnit = function(unit)
         map.units.removeItem(unit);
