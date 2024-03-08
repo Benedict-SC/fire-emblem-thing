@@ -1,6 +1,6 @@
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "REPOSITION"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK, REPOSITION, OVERVIEW
+    battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK, REPOSITION, OVERVIEW, PREBATTLE
     battle.map = Map(mapfile);
     battle.displayStuff = Array();
     battle.camera = BattleCam();
@@ -11,6 +11,7 @@ Battle = function(mapfile)
     battle.casualties = Array();
     battle.activeFaction = #(battle.map.factionOrder);
 
+    battle.preBattleMenu = PreBattleMenu();
     battle.repositionCell = nil;
 
     battle.render = function()
@@ -36,8 +37,8 @@ Battle = function(mapfile)
         end
         love.graphics.popCanvas();
         love.graphics.draw(battle.map.drawCanvas,-battle.camera.xoff,-battle.camera.yoff,0,battle.camera.factor,battle.camera.factor);
-        if battle.state == "ACTION" or battle.state == "PICKWEAPON" or battle.state == "GLOBALMENU" then
-            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["GLOBALMENU"]=battle.globalMenu};
+        if battle.state == "ACTION" or battle.state == "PICKWEAPON" or battle.state == "GLOBALMENU" or battle.state == "PREBATTLE" then
+            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["GLOBALMENU"]=battle.globalMenu,["PREBATTLE"]=battle.preBattleMenu};
             local menuToRender = menus[battle.state];
             menuToRender.render(battle.camera);
         end
@@ -93,7 +94,7 @@ Battle = function(mapfile)
                     if battle.repositionCell then
                         battle.repositionCell = nil;
                     else
-                        --TODO: back out to map options menu
+                        battle.state = "PREBATTLE";
                     end
                 end
             elseif(battle.input_select()) then 
@@ -145,7 +146,7 @@ Battle = function(mapfile)
                 if battle.repositionCell then
                     battle.repositionCell = nil;
                 else
-                    --TODO: back out to map options menu
+                    battle.state = "PREBATTLE";
                 end
             end
         elseif (battle.state == "OVERVIEW") then
@@ -157,10 +158,10 @@ Battle = function(mapfile)
                     game.statspage.setAlignment(occ.faction);
                     game.state = "STATS";
                 elseif controlMode == "MOUSE" then
-                    --TODO: back out to map options menu
+                    battle.state = "PREBATTLE";
                 end
             elseif(battle.input_cancel()) then
-                --TODO: back out to map options menu
+                battle.state = "PREBATTLE"; 
             end
         elseif (battle.state == "PATHING") then
             battle.updateSelectorPosition();
@@ -237,8 +238,8 @@ Battle = function(mapfile)
             end
         elseif (battle.state == "MOVING") then
             --skip and cancel inputs during the walk go here
-        elseif (battle.state == "ACTION") or (battle.state == "PICKWEAPON") or (battle.state == "GLOBALMENU") then
-            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["GLOBALMENU"]=battle.globalMenu};
+        elseif (battle.state == "ACTION") or (battle.state == "PICKWEAPON") or (battle.state == "GLOBALMENU") or (battle.state == "PREBATTLE") then
+            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["GLOBALMENU"]=battle.globalMenu,["PREBATTLE"]=battle.preBattleMenu};
             local menuToControl = menus[battle.state];
             if battle.input_cancel() then
                 if battle.state == "PICKWEAPON" then 
