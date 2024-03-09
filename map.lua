@@ -32,7 +32,10 @@ Map = function(filename)
     for i=1,#(data.tiles),1 do
         local row = Array();
         for j=1,#(data.tiles[1]),1 do
-            local cell = Cell(data.tiles[i][j]);
+            local sourceCell = data.tiles[i][j];
+            local cell = Cell(sourceCell.tile);
+            cell.isStartingPosition = sourceCell.isStartingPosition;
+
             row.push(cell);
         end
         map.cells.push(row);
@@ -40,14 +43,13 @@ Map = function(filename)
 
     map.drawCanvas = love.graphics.newCanvas(#map.cells[1] * game.tileSize,#map.cells * game.tileSize);
     data.units = arrayify(data.units);
-    if data.startingPositions then --all maps should have at least one but some test maps don't
+    --[[if data.startingPositions then --all maps should have at least one but some test maps don't
         map.startingPositions = arrayify(data.startingPositions);
         for i=1,#(map.startingPositions),1 do
             local pos = map.startingPositions[i];
             map.cells[pos.y][pos.x].isStartingPosition = true;
-            love.graphics.draw(repositionOverlay,(pos.x-1)*game.tileSize,(pos.y-1)*game.tileSize);
         end
-    end
+    end--]]
     UnitData.loadArmyDataToMapData(data.units);
     for i=1,#(data.units),1 do
         local unitdata = data.units[i]
@@ -93,9 +95,13 @@ Map = function(filename)
         end]]--
     end
     map.renderStartingPositions = function()
-        for i=1,#(map.startingPositions),1 do
-            local pos = map.startingPositions[i];
-            love.graphics.draw(repositionOverlay,(pos.x-1)*game.tileSize,(pos.y-1)*game.tileSize);
+        for i=1,#map.cells,1 do
+            for j=1,#(map.cells[1]),1 do
+                local cell = map.cells[i][j];
+                if cell.isStartingPosition then
+                    love.graphics.draw(repositionOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
+                end
+            end
         end
     end
     map.renderUnits = function()
