@@ -1,0 +1,1 @@
+If your build didn't come with a "custom" folder and the Medallion Works editor is erroring, just rename this "custom-empty" folder to "custom", and you should be off to the races. It contains all the default files and folder structure the editor expects.
