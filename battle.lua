@@ -17,7 +17,7 @@ Battle = function(mapfile)
     battle.render = function()
         --DEBUG_TEXT = battle.state;
         love.graphics.pushCanvas(battle.map.drawCanvas);
-        battle.map.renderTerrain();
+        battle.map.renderFloor();
         if battle.state == "PATHING" or battle.state == "MOVING" then
             for i=1,#(battle.movePath),1 do
                 path.renderPathBit(battle.movePath,i);

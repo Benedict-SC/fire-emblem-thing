@@ -40,6 +40,15 @@ Map = function(filename)
         end
         map.cells.push(row);
     end
+    map.props = arrayify(data.props);
+    map.props.forEach(function(x) 
+        x.imgFile = x.img;
+        x.img = love.graphics.newImage(x.imgFile);
+        x.naturalWidth = x.img:getWidth();
+        x.naturalHeight = x.img:getHeight();
+        x.sx = x.w / x.naturalWidth;
+        x.sy = x.h / x.naturalHeight;
+    end);
 
     map.drawCanvas = love.graphics.newCanvas(#map.cells[1] * game.tileSize,#map.cells * game.tileSize);
     data.units = arrayify(data.units);
@@ -76,12 +85,30 @@ Map = function(filename)
         map.cells[unitdata.y][unitdata.x].occupant = unit;
         map.units.push(unit);
     end
+    map.renderFloor = function()
+        map.renderTerrain();
+        map.renderPaintovers();
+        map.renderUI();
+    end
     map.renderTerrain = function()
         for i=1,#(map.cells),1 do
             for j=1,#(map.cells[1]),1 do
                 local cell = map.cells[i][j]
                 local tilecode = cell.terrainType;
                 love.graphics.draw(tiles[tilecode],(j-1)*game.tileSize,(i-1)*game.tileSize);
+            end
+        end
+    end
+    map.renderPaintovers = function()
+        for i=1,#map.props,1 do
+            local prop = map.props[i];
+            love.graphics.draw(prop.img,prop.x,prop.y,0,prop.sx,prop.sy);
+        end
+    end
+    map.renderUI = function()
+        for i=1,#(map.cells),1 do
+            for j=1,#(map.cells[1]),1 do
+                local cell = map.cells[i][j];
                 if cell.moveOn then
                     love.graphics.draw(moveOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 elseif cell.hitOn then
@@ -89,10 +116,6 @@ Map = function(filename)
                 end
             end
         end
-        --[[for i=1,#(map.units),1 do
-            local unit = map.units[i];
-            love.graphics.draw
-        end]]--
     end
     map.renderStartingPositions = function()
         for i=1,#map.cells,1 do
