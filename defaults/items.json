@@ -1,0 +1,91 @@
+[
+    {
+        "id":"IronSword",
+        "name":"Iron Sword",
+        "wtype":"SWORD",
+        "iconfile": "assets/img/sword.png",
+        "might":5,
+        "hit":90,
+        "weight":7
+    },
+    {
+        "id":"BraveSword",
+        "name":"Brave Sword",
+        "wtype":"SWORD",
+        "iconfile": "assets/img/sword.png",
+        "might":9,
+        "hit":75,
+        "rank":"B",
+        "weight":16,
+        "maxUses":30,
+        "brave":true
+    },
+    {
+        "id":"TrashSword",
+        "name":"Trash Sword",
+        "wtype":"SWORD",
+        "iconfile": "assets/img/sword.png",
+        "might":3,
+        "hit":30,
+        "weight":5,
+        "maxUses":2
+    },
+    {
+        "id":"IronLance",
+        "name":"Iron Lance",
+        "wtype":"LANCE",
+        "iconfile":"assets/img/lance.png",
+        "might":7
+    },
+    {
+        "id":"SteelLance",
+        "name":"Steel Lance",
+        "wtype":"LANCE",
+        "iconfile":"assets/img/lance.png",
+        "might":10,
+        "rank":"D",
+        "hit":70,
+        "weight":13,
+        "maxUses":30
+    },
+    {
+        "id":"Javelin",
+        "name":"Javelin",
+        "wtype":"LANCE",
+        "iconfile":"assets/img/lance.png",
+        "might":6,
+        "rank":"D",
+        "range":[1,2],
+        "hit":60,
+        "weight":11,
+        "maxUses":25
+    },
+    {
+        "id":"IronBow",
+        "name":"Iron Bow",
+        "wtype":"BOW",
+        "iconfile":"assets/img/bow.png",
+        "might":6,
+        "hit":85,
+        "range":[2],
+        "weight":5
+    },
+    {
+        "id":"Flux",
+        "name":"Flux",
+        "wtype":"DARK",
+        "iconfile":"assets/img/book.png",
+        "might":7,
+        "hit":70,
+        "crit":5,
+        "range":[1,2],
+        "weight":3,
+        "magic":true
+    },
+    {
+        "id":"Vulnerary",
+        "name":"Vulnerary",
+        "wtype":"ITEM",
+        "iconfile":"assets/img/vulnerary.png"
+    }
+]
