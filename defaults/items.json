@@ -1,91 +1,184 @@
 [
     {
-        "id":"IronSword",
-        "name":"Iron Sword",
-        "wtype":"SWORD",
+        "id": "IronSword",
+        "name": "Iron Sword",
         "iconfile": "assets/img/sword.png",
-        "might":5,
-        "hit":90,
-        "weight":7
+        "wtype": "SWORD",
+        "maxUses": 40,
+        "goldValue": 200,
+        "rank": "E",
+        "might": 5,
+        "hit": 90,
+        "crit": 0,
+        "weight": 7,
+        "range": [
+            1
+        ],
+        "brave": false,
+        "magic": false
     },
     {
-        "id":"BraveSword",
-        "name":"Brave Sword",
-        "wtype":"SWORD",
+        "id": "BraveSword",
+        "name": "Brave Sword",
         "iconfile": "assets/img/sword.png",
-        "might":9,
-        "hit":75,
-        "rank":"B",
-        "weight":16,
-        "maxUses":30,
-        "brave":true
+        "wtype": "SWORD",
+        "maxUses": 30,
+        "goldValue": 200,
+        "rank": "B",
+        "might": 9,
+        "hit": 75,
+        "crit": 0,
+        "weight": 16,
+        "range": [
+            1
+        ],
+        "brave": true,
+        "magic": false
     },
     {
-        "id":"TrashSword",
-        "name":"Trash Sword",
-        "wtype":"SWORD",
+        "id": "TrashSword",
+        "name": "Trash Sword",
         "iconfile": "assets/img/sword.png",
-        "might":3,
-        "hit":30,
-        "weight":5,
-        "maxUses":2
+        "wtype": "SWORD",
+        "maxUses": 2,
+        "goldValue": 200,
+        "rank": "E",
+        "might": 4,
+        "hit": 29,
+        "crit": 2,
+        "weight": 6,
+        "range": [
+            1
+        ],
+        "brave": false,
+        "magic": false
     },
     {
-        "id":"IronLance",
-        "name":"Iron Lance",
-        "wtype":"LANCE",
-        "iconfile":"assets/img/lance.png",
-        "might":7
+        "id": "IronLance",
+        "name": "Iron Lance",
+        "iconfile": "assets/img/lance.png",
+        "wtype": "LANCE",
+        "maxUses": 40,
+        "goldValue": 200,
+        "rank": "E",
+        "might": 7,
+        "hit": 80,
+        "crit": 0,
+        "weight": 8,
+        "range": [
+            1
+        ],
+        "brave": false,
+        "magic": false
     },
     {
-        "id":"SteelLance",
-        "name":"Steel Lance",
-        "wtype":"LANCE",
-        "iconfile":"assets/img/lance.png",
-        "might":10,
-        "rank":"D",
-        "hit":70,
-        "weight":13,
-        "maxUses":30
+        "id": "SteelLance",
+        "name": "Steel Lance",
+        "iconfile": "assets/img/lance.png",
+        "wtype": "LANCE",
+        "maxUses": 30,
+        "goldValue": 200,
+        "rank": "D",
+        "might": 10,
+        "hit": 70,
+        "crit": 0,
+        "weight": 13,
+        "range": [
+            1
+        ],
+        "brave": false,
+        "magic": false
     },
     {
-        "id":"Javelin",
-        "name":"Javelin",
-        "wtype":"LANCE",
-        "iconfile":"assets/img/lance.png",
-        "might":6,
-        "rank":"D",
-        "range":[1,2],
-        "hit":60,
-        "weight":11,
-        "maxUses":25
+        "id": "Javelin",
+        "name": "Javelin",
+        "iconfile": "assets/img/lance.png",
+        "wtype": "LANCE",
+        "maxUses": 25,
+        "goldValue": 200,
+        "rank": "D",
+        "might": 6,
+        "hit": 60,
+        "crit": 0,
+        "weight": 11,
+        "range": [
+            1,
+            2
+        ],
+        "brave": false,
+        "magic": false
     },
     {
-        "id":"IronBow",
-        "name":"Iron Bow",
-        "wtype":"BOW",
-        "iconfile":"assets/img/bow.png",
-        "might":6,
-        "hit":85,
-        "range":[2],
-        "weight":5
+        "id": "IronAxe",
+        "name": "Iron Axe",
+        "iconfile": "assets/img/qmark-tiny.png",
+        "wtype": "AXE",
+        "maxUses": 30,
+        "goldValue": 200,
+        "rank": "E",
+        "might": 10,
+        "hit": 60,
+        "crit": 0,
+        "weight": 12,
+        "range": [
+            1
+        ],
+        "brave": false,
+        "magic": false
     },
     {
-        "id":"Flux",
-        "name":"Flux",
-        "wtype":"DARK",
-        "iconfile":"assets/img/book.png",
-        "might":7,
-        "hit":70,
-        "crit":5,
-        "range":[1,2],
-        "weight":3,
-        "magic":true
+        "id": "IronBow",
+        "name": "Iron Bow",
+        "iconfile": "assets/img/bow.png",
+        "wtype": "BOW",
+        "maxUses": 40,
+        "goldValue": 200,
+        "rank": "E",
+        "might": 6,
+        "hit": 85,
+        "crit": 0,
+        "weight": 5,
+        "range": [
+            2
+        ],
+        "brave": false,
+        "magic": false
     },
     {
-        "id":"Vulnerary",
-        "name":"Vulnerary",
-        "wtype":"ITEM",
-        "iconfile":"assets/img/vulnerary.png"
+        "id": "Flux",
+        "name": "Flux",
+        "iconfile": "assets/img/book.png",
+        "wtype": "DARK",
+        "maxUses": 40,
+        "goldValue": 200,
+        "rank": "E",
+        "might": 7,
+        "hit": 70,
+        "crit": 5,
+        "weight": 3,
+        "range": [
+            1,
+            2
+        ],
+        "brave": false,
+        "magic": true
+    },
+    {
+        "id": "Vulnerary",
+        "name": "Vulnerary",
+        "iconfile": "assets/img/vulnerary.png",
+        "wtype": "ITEM",
+        "maxUses": 8,
+        "goldValue": 200,
+        "rank": "E",
+        "might": 20,
+        "hit": 80,
+        "crit": 0,
+        "weight": 8,
+        "range": [
+            1
+        ],
+        "brave": false,
+        "magic": false
     }
 ]
