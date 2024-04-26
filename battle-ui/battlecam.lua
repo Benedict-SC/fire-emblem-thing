@@ -22,26 +22,46 @@ BattleCam = function()
             game.battle.actionMenu.configureSize(bc);
         end
     end
-    bc.recenter = function(b,x,y)
+    bc.recenter = function(b,x,y,instant)
+        bc.initialOffset = {x=bc.xoff,y=bc.yoff};
+
         local halftile = math.floor(game.tileSize / 2 + 0.5);
         local centerX = (x-1) * (game.tileSize) + halftile;
         local centerY = (y-1) * (game.tileSize) + halftile;
         local screenSpaceX = centerX * bc.factor;
         local screenSpaceY = centerY * bc.factor;
-        bc.xoff = screenSpaceX - math.floor(gamewidth / 2);
-        bc.yoff = screenSpaceY - math.floor(gameheight / 2);
+        local targetOffset = {x=screenSpaceX - math.floor(gamewidth / 2),y= screenSpaceY - math.floor(gameheight / 2)};
         --don't let it clip outside the map bounds
-        if bc.xoff < 0 then bc.xoff = 0; end
-        if bc.yoff < 0 then bc.yoff = 0; end
+        if targetOffset.x < 0 then targetOffset.x = 0; end
+        if targetOffset.y < 0 then targetOffset.y = 0; end
         local mapwidth = #b.map.cells[1] * game.tileSize;
         local mapheight = #b.map.cells * game.tileSize;
         local screenMW = math.floor(mapwidth * bc.factor + 0.5);
         local screenMH = math.floor(mapheight * bc.factor + 0.5);
-        if bc.xoff + gamewidth > screenMW then
-            bc.xoff = screenMW - gamewidth;
+        if targetOffset.x + gamewidth > screenMW then
+            targetOffset.x = screenMW - gamewidth;
         end
-        if bc.yoff + gameheight > screenMH then
-            bc.yoff = screenMH - gameheight;
+        if targetOffset.y + gameheight > screenMH then
+            targetOffset.y = screenMH - gameheight;
+        end
+
+        if (bc.animation and (not bc.animation.done) and (not bc.animation.cancel)) then
+            bc.animation.cancel = true;
+        end
+        if (instant) then
+            bc.xoff = targetOffset.x;
+            bc.yoff = targetOffset.y;
+        else
+            bc.animation = async.doOverTime(0.3,function(percent) 
+                local prog = 1 - math.pow(1 - percent, 3);
+                local distX = targetOffset.x - bc.initialOffset.x;
+                local distY = targetOffset.y - bc.initialOffset.y;
+                bc.xoff = bc.initialOffset.x + (prog*distX);
+                bc.yoff = bc.initialOffset.y + (prog*distY);
+            end,function() 
+                bc.xoff = targetOffset.x;
+                bc.yoff = targetOffset.y;
+            end);
         end
     end
     bc.xoff = 0;

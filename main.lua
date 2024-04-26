@@ -45,6 +45,7 @@ require("movefx");
 require("menubox");
 require("textbox");
 require("convo");
+require("ai");
 require("battle");
 require("battle-ui.battlecam");
 require("battle-ui.actionmenu");

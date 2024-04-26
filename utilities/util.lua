@@ -98,6 +98,11 @@ arrayify = function(bareArray)
 		end
 		return newArray;
 	end
+	bareArray.shallowCopy = function()
+		return bareArray.map(function(x) 
+			return x;
+		end);
+	end
 	return bareArray;
 end
 deepcopy = function(orig) --http://lua-users.org/wiki/CopyTable

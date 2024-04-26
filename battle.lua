@@ -506,6 +506,7 @@ Battle = function(mapfile)
     --SECTION: INPUT PROCESSING FUNCTIONS
     battle.updateSelectorPosition = function()
         if (controlMode == "KEYBOARD" or controlMode == "CONTROLLER") then
+            local anyInput = false;
             if input["down"] then
                 local turboThisFrame = turbosProcessed["down"] < turboCounts["down"];
                 if turboThisFrame then turbosProcessed["down"] = turbosProcessed["down"] + 1; end
@@ -513,6 +514,7 @@ Battle = function(mapfile)
                     battle.selectorPos.y = battle.selectorPos.y + 1;
                     if battle.selectorPos.y > #battle.map.cells then battle.selectorPos.y = #battle.map.cells; end
                 end
+                anyInput = true;
             end
             if input["up"] then 
                 local turboThisFrame = turbosProcessed["up"] < turboCounts["up"];
@@ -521,6 +523,7 @@ Battle = function(mapfile)
                     battle.selectorPos.y = battle.selectorPos.y - 1;
                     if battle.selectorPos.y < 1 then battle.selectorPos.y = 1; end
                 end
+                anyInput = true;
             end
             if input["right"] then 
                 local turboThisFrame = turbosProcessed["right"] < turboCounts["right"];
@@ -529,6 +532,7 @@ Battle = function(mapfile)
                     battle.selectorPos.x = battle.selectorPos.x + 1;
                     if battle.selectorPos.x > #battle.map.cells[1] then battle.selectorPos.x = #battle.map.cells[1]; end
                 end
+                anyInput = true;
             end
             if input["left"] then 
                 local turboThisFrame = turbosProcessed["left"] < turboCounts["left"];
@@ -537,16 +541,32 @@ Battle = function(mapfile)
                     battle.selectorPos.x = battle.selectorPos.x - 1;
                     if battle.selectorPos.x < 1 then battle.selectorPos.x = 1; end
                 end
+                anyInput = true;
             end
-            battle.recenterOnSelector();
+            if (anyInput) then
+                battle.recenterOnSelector();
+            end
         elseif controlMode == "MOUSE" then
             local mx,my = love.mouse.getPosition();
             mx = mx + battle.camera.xoff;
             my = my + battle.camera.yoff;
             mx = math.floor(mx / battle.camera.factor + 0.5);
             my = math.floor(my / battle.camera.factor + 0.5);
+            local origx = battle.selectorPos.x;
+            local origy = battle.selectorPos.y;
             battle.selectorPos.x = math.floor(mx/game.tileSize) + 1;
             battle.selectorPos.y = math.floor(my/game.tileSize) + 1;
+            if (origx ~= battle.selectorPos.x) or (origy ~= battle.selectorPos.y) then
+                battle.updateCameraOnMouseMovement();
+            end            
+        end
+    end
+    battle.updateCameraOnMouseMovement = function()
+        local mx,my = love.mouse.getPosition();
+        local scrollX = battle.camera.deadZoneW;
+        local scrollY = battle.camera.deadZoneH;
+        if (mx < scrollX) or (my < scrollY) or (mx > gamewidth - scrollX) or (my > gameheight - scrollY) then
+            battle.recenterOnSelector();
         end
     end
     battle.updateTargetingSelector = function()
@@ -672,8 +692,11 @@ Battle = function(mapfile)
         end
         
     end
-    battle.recenterOnSelector = function()
-        battle.camera.recenter(battle,battle.selectorPos.x,battle.selectorPos.y);
+    battle.recenterOnSelector = function(instant)
+        battle.recenterOn(battle.selectorPos.x,battle.selectorPos.y,instant);
+    end
+    battle.recenterOn = function(x,y,instant)
+        battle.camera.recenter(battle,x,y,instant);
     end
     battle.processZoomInput = function()
         if pressedThisFrame["zoomIn"] then

@@ -37,6 +37,15 @@ ActionMenu = function(unit)
         end
         am.options.push(attackOption);
     end
+    --DEBUG-AI-TEST
+    if unit.faction == "ENEMY" then
+        local dbgai = {name="DEBUG AI"};
+        dbgai.onPick = function()
+            local ai = AIManager();
+            ai.pickTarget(unit,game.battle.map);
+        end
+        am.options.push(dbgai);
+    end
     --TALK
     local talkTargets = adjUnits.filter(function(x) 
         if not (am.unit.talks) then

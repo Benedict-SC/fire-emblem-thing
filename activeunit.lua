@@ -31,6 +31,9 @@ ActiveUnit = function(unitdata)
     end
 
     unit.inventory = Array();
+    unit.getWeapons = function()
+        return unit.inventory.filter(function(x) return x.isWeapon; end);
+    end
     unit.equipIdx = 0;
     unit.friendly = function(otherUnit)
         local same = unit.faction == otherUnit.faction;

@@ -10,13 +10,9 @@ async.update = function()
 		end
 	end
 	local i=1;
-	while i <= #(async.updates) do
-		if async.updates[i].done or async.updates[i].cancel then
-			async.updates.remove(i);
-		else
-			i = i + 1;
-		end
-	end
+	async.updates = async.updates.filter(function(x) 
+		return (not x.done) and (not x.cancel);
+	end);
 end
 
 async.doForever = function(eternalfunc) 

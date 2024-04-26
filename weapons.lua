@@ -1,27 +1,13 @@
 Weapon = function(rawWeapon)
-    --[[local wepon = {};
-    wepon.name = "Generic Weapon";
-    wepon.iconfile = "assets/img/qmark-tiny.png";
-    wepon.wtype = "NONE";
-    wepon.might = 0;
-    wepon.rank = "E";
-    wepon.hit = 80;
-    wepon.crit = 0;
-    wepon.weight = 8;
-    wepon.range = arrayify({1});
-    wepon.maxUses = 40;
-    wepon.goldValue = 200;
-    wepon.usable = function()
-        return false;
-    end
-    wepon.isWeapon = true;
-    wepon.brave = false;
-    return wepon;--]]
     rawWeapon.range = arrayify(rawWeapon.range)
     if rawWeapon.wtype == "ITEM" then --TODO: there's non-usable held-items so check for that
         rawWeapon.usable = function() return true; end
     else
         rawWeapon.usable = function() return false; end
+    end
+    rawWeapon.isWeapon = (rawWeapon.wtype ~= "ITEM" and rawWeapon.wtype ~= "STAFF");
+    rawWeapon.hasRange = function(range)
+        return rawWeapon.range.has(range);
     end
     return rawWeapon;
 end
