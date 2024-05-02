@@ -1,3 +1,4 @@
+require("pathfinding");
 Battle = function(mapfile)
     local battle = {};
     battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK, REPOSITION, OVERVIEW, PREBATTLE
@@ -190,46 +191,12 @@ Battle = function(mapfile)
                 elseif cell.occupant and battle.moveUnit.friendly(cell.occupant) then 
                     --whoops, that's just a friend- it'll show up in your movement range but don't try and move there. invalid input.
                 else --you're moving to an empty square. 
-                    battle.clearOverlays();
-                    battle.moveUnit.walkIndex = 1;
-                    battle.originalCoords = {y=battle.moveUnit.y,x=battle.moveUnit.x};
-                    local segFunc = function(percent) 
-                        local u = battle.moveUnit;
-                        local origin = battle.movePath[1];
-                        local src = battle.movePath[u.walkIndex];
-                        local dest = battle.movePath[u.walkIndex + 1];
-                        local srcOffX = game.tileSize * (src.x - origin.x);
-                        local srcOffY = game.tileSize * (src.y - origin.y);
-                        local segmentOffX = percent * game.tileSize * (dest.x - src.x);
-                        local segmentOffY = percent * game.tileSize * (dest.y - src.y);
-                        u.xoff = srcOffX + segmentOffX;
-                        u.yoff = srcOffY + segmentOffY;
-                        --also maybe change the orientation of the movement sprite if we're doing that                        
+                    local mover = battle.moveUnit;
+                    local whendone = function() 
+                        battle.actionMenu = ActionMenu(mover);
+                        battle.state = "ACTION";
                     end
-                    local segEndFunc;
-                    segEndFunc = function()
-                        local u = battle.moveUnit;
-                        u.walkIndex = u.walkIndex + 1;
-                        if u.walkIndex == #battle.movePath then
-                            local wx = battle.movePath[#battle.movePath].x;
-                            local wy = battle.movePath[#battle.movePath].y;
-                            battle.map.moveUnitTo(u,wx,wy);                            
-                            battle.camera.recenter(battle,wx,wy);
-                            u.xoff = 0;
-                            u.yoff = 0;
-                            u.walkIndex = nil;
-                            battle.actionMenu = ActionMenu(u);
-                            battle.resetPathing();
-                            battle.state = "ACTION"; --TODO: ACTION
-                        else                     
-                            battle.camera.recenter(battle,
-                                    battle.movePath[u.walkIndex].x,
-                                    battle.movePath[u.walkIndex].y);
-                            async.doOverTime(0.06,segFunc,segEndFunc);
-                        end
-                    end
-                    battle.state = "MOVING";
-                    async.doOverTime(0.1,segFunc,segEndFunc);
+                    battle.beginMovement(whendone);
                 end
             elseif battle.input_cancel() then
                 battle.resetPathing();
@@ -326,12 +293,16 @@ Battle = function(mapfile)
         battle.displayStuff = Array();
         local faction = battle.map.factionOrder[battle.activeFaction];
         local factionBannerUrl = "assets/img/phase-other.png";
+        local soundId = "otherphase";
         if faction == "PLAYER" then
             factionBannerUrl = "assets/img/phase-player.png"
+            soundId = "playerphase";
         elseif faction == "ENEMY" then
             factionBannerUrl = "assets/img/phase-enemy.png"
+            soundId = "enemyphase";
         end
         local phaseText = love.graphics.newImage(factionBannerUrl);
+        sound.play(soundId);
 
         local ptThing = {};
         ptThing.drawable = phaseText;
@@ -401,42 +372,11 @@ Battle = function(mapfile)
     end
     battle.resetPathing();
     battle.pathfind = function(occ)
-        local nodes = battle.map.nodes(occ); --get the navigation nodes
-        local startNode = nodes[occ.y][occ.x];
-        local nodes1D = nodes.oneDimensionDown();
-        local nodelist = dijkstra(startNode,occ.mov); --populate the navigation nodes with costs and get the subset of nodes that are considered in-range
-        for i=1,#nodelist,1 do --for all those nodes, turn on the valid-move-option overlay
-            local node = nodelist[i];
-            node.marked = true; --mark it so we can subtract it to get out-of-range nodes;
-            battle.map.cells[node.y][node.x].moveOn = true;
-        end
-        --now let's calculate attack ranges
-        local ranges = occ.getRangeSpan();
-        local unmarked = nodes1D.filter(function(x) return not (x.marked) end); --get just the nodes out of range
-        for i=1,#ranges,1 do
-            for j=1,#unmarked,1 do --for each attack range, have each out-of-move-range check if any of the in-move-range spaces are within that attack range. assume attack ranges are commutative and not blocked by walls. TODO: revise this if that assumption changes
-                local target = unmarked[j];
-                local nodesWithoutFriends = nodelist.filter(function(x) 
-                    local rangeOcc = battle.map.cellFromNode(x).occupant;
-                    return rangeOcc == nil or rangeOcc == occ;
-                end);
-                local manhattanNeighbors = nodesWithoutFriends.filter(function(x) 
-                    return x.manhattanDistance(target) == ranges[i];
-                end);
-                if manhattanNeighbors.size > 0 then 
-                    unmarked[j].hittable = true;
-                end
-            end
-        end
-        unmarked.forEach(function(x) --turn on the attack range overlays
-            if x.hittable then
-                battle.map.cells[x.y][x.x].hitOn = true;
-            end
-        end);
+        local nodes,startNode = Pathfinding.displayRange(occ,battle);
         battle.state = "PATHING";
-        battle.initMovement(nodes,startNode);
+        battle.initMoveSelection(nodes,startNode);
     end
-    battle.initMovement = function(nodes,startNode)
+    battle.initMoveSelection = function(nodes,startNode)
         battle.moveUnit = battle.map.cells[startNode.y][startNode.x].occupant;
         battle.moveBudget = battle.moveUnit.mov;
         battle.moveNodes = nodes;
@@ -503,6 +443,59 @@ Battle = function(mapfile)
             end
         end
     end
+    battle.beginMovement = function(whendone)
+        battle.clearOverlays();
+        battle.moveUnit.walkIndex = 1;
+        battle.originalCoords = {y=battle.moveUnit.y,x=battle.moveUnit.x};
+        local segFunc = function(percent) 
+            local u = battle.moveUnit;
+            local origin = battle.movePath[1];
+            local src = battle.movePath[u.walkIndex];
+            local dest = battle.movePath[u.walkIndex + 1];
+            local srcOffX = game.tileSize * (src.x - origin.x);
+            local srcOffY = game.tileSize * (src.y - origin.y);
+            local segmentOffX = percent * game.tileSize * (dest.x - src.x);
+            local segmentOffY = percent * game.tileSize * (dest.y - src.y);
+            u.xoff = srcOffX + segmentOffX;
+            u.yoff = srcOffY + segmentOffY;
+             --also maybe change the orientation of the movement sprite if we're doing that                        
+        end
+        local segEndFunc;
+        segEndFunc = function()
+            local u = battle.moveUnit;
+            u.walkIndex = u.walkIndex + 1;
+            if u.walkIndex == #battle.movePath then
+                local wx = battle.movePath[#battle.movePath].x;
+                local wy = battle.movePath[#battle.movePath].y;
+                battle.map.moveUnitTo(u,wx,wy);                            
+                battle.camera.recenter(battle,wx,wy);
+                u.xoff = 0;
+                u.yoff = 0;
+                u.walkIndex = nil;
+                battle.resetPathing();
+                whendone();
+            else                     
+                battle.camera.recenter(battle,
+                    battle.movePath[u.walkIndex].x,
+                    battle.movePath[u.walkIndex].y);
+                async.doOverTime(0.06,segFunc,segEndFunc);
+            end
+        end
+        battle.state = "MOVING";
+        async.doOverTime(0.1,segFunc,segEndFunc);
+    end
+    --SECTION: AI BEHAVIOR
+    battle.moveToAttack = function(unit,decision)
+        battle.moveUnit = unit;
+        battle.moveBudget = battle.moveUnit.mov;
+        battle.movePath = decision.movePath;
+        battle.moveStart = decision.movePath[1];
+        local whendone = function()
+            battle.endUnitsTurn(unit);
+        end
+        battle.beginMovement(whendone);
+    end
+    
     --SECTION: INPUT PROCESSING FUNCTIONS
     battle.updateSelectorPosition = function()
         if (controlMode == "KEYBOARD" or controlMode == "CONTROLLER") then

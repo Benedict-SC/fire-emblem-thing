@@ -32,6 +32,7 @@ require("utilities.shaders");
 require("utilities.async");
 require("utilities.legacy-s5.input");
 require("utilities.legacy-s5.textformatter");
+require("utilities.legacy-s5.sound");
 require("utilities.path");
 require("utilities.canvas");
 require("utilities.animation");

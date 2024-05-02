@@ -6,21 +6,20 @@ AIManager = function()
             return {unit=x};
         end);
     end
-    ai.loadNavNodes = function(unit,map)
-        ai.nodes = map.nodes(unit);
-    end
-    ai.getPossibleCombats = function(unit)
+    ai.getPossibleCombats = function(unit,map)
         DEBUG_TEXT = "";
         local possibleCombats = Array();
-        local nodes1D = ai.nodes.oneDimensionDown();
+        local nodes = map.nodes(unit);
+        local nodes1D = nodes.oneDimensionDown();
         local nodesWithEnemies = nodes1D.filter(function(x) 
             if not x.cell.occupant then 
                 return false; 
             end
             return not unit.friendly(x.cell.occupant);
         end);
-        local startNode = ai.nodes[unit.y][unit.x];
-        local nodeslist = dijkstra(startNode,unit.mov); --populate the navigation nodes with costs
+        local startNode = nodes[unit.y][unit.x];
+        ai.startNode = startNode; --save this for later pathfinding
+        local nodeslist = Pathfinding.dijkstra(startNode,unit.mov); --populate the navigation nodes with costs
         for i=1,#nodeslist,1 do --for all those nodes, mark them 
             local node = nodeslist[i];
             node.marked = true; --mark it so we can subtract it to get out-of-range nodes;
@@ -42,6 +41,9 @@ AIManager = function()
                 manhattanNeighbors = manhattanNeighbors.filter(function(x) 
                     return x.marked; --only consider combats from reachable spaces
                 end);
+                manhattanNeighbors = manhattanNeighbors.filter(function(x)
+                    return x.cell.occupant == nil;
+                end);
                 if manhattanNeighbors.size > 0 then 
                     local weps = unit.getWeapons();
                     weps = weps.filter(function(x) return x.hasRange(ranges[i]) end); --consider only combats with weapons that can actually reach from these spaces
@@ -57,21 +59,61 @@ AIManager = function()
         return possibleCombats;
     end
     ai.pickTarget = function(unit,map)
-        ai.loadNavNodes(unit,map);
-        local possibleCombats = ai.getPossibleCombats(unit);
+        local possibleCombats = ai.getPossibleCombats(unit,map);
         --DEBUG_TEXT = "" .. #possibleCombats .. " possible combats.";
         local dbg = "Can attack:\n";
         for i=1,#possibleCombats,1 do
             local pc = possibleCombats[i];
-            dbg = dbg .. pc.def.cell.occupant.name .. " from (" .. pc.atk.x .. "/" .. pc.atk.y .. ") with " .. pc.wep.name .. "\n";
+            --dbg = dbg .. pc.def.cell.occupant.name .. " from (" .. pc.atk.x .. "/" .. pc.atk.y .. ") with " .. pc.wep.name .. "\n";
         end
-        DEBUG_TEXT = DEBUG_TEXT .. dbg;
+        --DEBUG_TEXT = DEBUG_TEXT .. dbg;
+        return possibleCombats;
+    end
+    ai.getDecision = function(unit,map) 
+        if (not unit.aiStrategy) or unit.aiStrategy == "SENTRY" then
+            local possibleCombats = ai.pickTarget(unit,map);
+            local randomCombat = possibleCombats[math.random(#possibleCombats)]; --TODO: pick based on combat prediction
+            if not randomCombat then return nil; end
+            --DEBUG_TEXT = "I'm attacking... " .. randomCombat.def.cell.occupant.name .. " from (" .. randomCombat.atk.x .. "/" .. randomCombat.atk.y .. ") with " .. randomCombat.wep.name .. "\n";
+            local decision = Decision(randomCombat.atk,randomCombat.def,{attackingWith=randomCombat.wep});
+            if randomCombat.atk ~= ai.startNode then
+                decision.createPath(ai.startNode);
+                DEBUG_TEXT = "Path is ";
+                for i=1,#decision.movePath,1 do
+                    local pt = decision.movePath[i];
+                    DEBUG_TEXT = DEBUG_TEXT .. "(" .. pt.x .. "," .. pt.y .. "),\n";
+                end
+                DEBUG_TEXT = DEBUG_TEXT .. "to attack " .. randomCombat.def.cell.occupant.name;
+            else
+                DEBUG_TEXT = "I'm attacking... " .. randomCombat.def.cell.occupant.name .. " from right here with " .. randomCombat.wep.name .. "\n";
+            end
+            return decision;
+        end
+        return nil;
+    end
+    ai.takeNextUnitTurn = function(battle,whendone)
+        local unit = ai.getNextUnit();
+        if not unit then
+           whendone(nil); --let battle handle transitions
+        end
+        local didSomething = ai.takeTurn(unit,battle);
+        if not didSomething then
+            whendone(unit);
+        end
+    end
+    ai.takeTurn = function(unit,battle)
+        local decision = ai.getDecision(unit,battle.map);
+        if decision then
+            battle.moveToAttack(unit,decision);
+            return true;
+        else
+            return false;
+        end
     end
     ai.beginTurn = function()
         ai.unitList.forEach(function(x) 
             x.turnTaken = false;
         end);
-
     end
     ai.getNextUnit = function()
         for i=1,#ai.unitList,1 do
@@ -88,6 +130,24 @@ AIManager = function()
     end
 
     return ai;
+end
+Decision = function(navTile,targetNode,options)
+    local d = {};
+    d.navTile = navTile;
+    d.targetNode = targetNode;
+    d.options = options;
+    d.createPath = function(startNode)
+        local pathBack = Array();
+        local backNode = navTile;
+        d.moveCSF = backNode.costSoFar;
+        while backNode ~= startNode do
+            pathBack.push(backNode);
+            backNode = backNode.preferredConnBack.src;
+        end
+        pathBack.push(startNode);
+        d.movePath = pathBack.reverse();
+    end
+    return d;
 end
 PossibleCombat = function(attackingNode,defendingNode,attackerWeapon)
     local pc = {};
