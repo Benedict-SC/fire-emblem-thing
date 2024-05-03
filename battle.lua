@@ -1,7 +1,7 @@
 require("pathfinding");
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK, REPOSITION, OVERVIEW, PREBATTLE
+    battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK, REPOSITION, OVERVIEW, PREBATTLE, AI
     battle.map = Map(mapfile);
     battle.displayStuff = Array();
     battle.camera = BattleCam();
@@ -315,9 +315,17 @@ Battle = function(mapfile)
             async.wait(1.0,function()
                 async.doOverTime(0.3,function(percent) 
                     ptThing.x = 100 + math.floor(percent * 500 + 0.5);
-                end,function() 
-                    battle.state = "MAINPHASE";
-                end)
+                end,function() --here's the code that actually executes when the phase begins
+                    if faction == "PLAYER" then
+                        battle.state = "MAINPHASE";
+                    elseif faction == "ENEMY" then
+                        battle.ai = AIManager();
+                        battle.ai.assignUnitList(battle.map.enemyUnits());
+                        battle.ai.beginTurn();
+                        battle.takeNextAiTurn();
+                        battle.state = "AI";
+                    end
+                end);
             end);
         end)
     end
@@ -357,7 +365,7 @@ Battle = function(mapfile)
             if #unused <= 0 then
                 battle.changePhase();
             else 
-                battle.state = "MAINPHASE"; --TODO: queue up next AI turn, actually
+                battle.takeNextAiTurn();
             end            
         end
     end
@@ -494,6 +502,19 @@ Battle = function(mapfile)
             battle.endUnitsTurn(unit);
         end
         battle.beginMovement(whendone);
+    end
+    battle.takeNextAiTurn = function()
+        local aiunit = battle.ai.getNextUnit();
+        if aiunit then
+            battle.recenterOn(aiunit.unit.x,aiunit.unit.y,function()
+                local didAnything = battle.ai.takeTurn(aiunit,battle);
+                if not didAnything then
+                    battle.endUnitsTurn(aiunit.unit);
+                end
+            end);
+        else
+            error("shouldn't reach here- endUnitsTurn does it");--battle.changePhase();
+        end
     end
     
     --SECTION: INPUT PROCESSING FUNCTIONS
@@ -685,19 +706,19 @@ Battle = function(mapfile)
         end
         
     end
-    battle.recenterOnSelector = function(instant)
-        battle.recenterOn(battle.selectorPos.x,battle.selectorPos.y,instant);
+    battle.recenterOnSelector = function(whendone,instant)
+        battle.recenterOn(battle.selectorPos.x,battle.selectorPos.y,whendone,instant);
     end
-    battle.recenterOn = function(x,y,instant)
-        battle.camera.recenter(battle,x,y,instant);
+    battle.recenterOn = function(x,y,whendone,instant)
+        battle.camera.recenter(battle,x,y,whendone,instant);
     end
     battle.processZoomInput = function()
         if pressedThisFrame["zoomIn"] then
             battle.camera.zoom(1);
-            battle.recenterOnSelector();
+            battle.recenterOnSelector(nil,true);
         elseif pressedThisFrame["zoomOut"] then
             battle.camera.zoom(-1);
-            battle.recenterOnSelector();
+            battle.recenterOnSelector(nil,true);
         end
     end
     battle.input_detail = function(ignoreBounds)

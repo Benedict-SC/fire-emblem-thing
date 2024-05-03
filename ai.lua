@@ -101,12 +101,14 @@ AIManager = function()
             whendone(unit);
         end
     end
-    ai.takeTurn = function(unit,battle)
-        local decision = ai.getDecision(unit,battle.map);
+    ai.takeTurn = function(aiunit,battle)
+        local decision = ai.getDecision(aiunit.unit,battle.map);
         if decision then
-            battle.moveToAttack(unit,decision);
+            battle.moveToAttack(aiunit.unit,decision);
+            aiunit.turnTaken = true;
             return true;
         else
+            aiunit.turnTaken = true;
             return false;
         end
     end

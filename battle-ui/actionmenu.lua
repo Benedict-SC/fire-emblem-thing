@@ -42,7 +42,7 @@ ActionMenu = function(unit)
         local dbgai = {name="DEBUG AI"};
         dbgai.onPick = function()
             local ai = AIManager();
-            ai.takeTurn(unit,game.battle);
+            ai.takeTurn({unit=unit},game.battle);
         end
         am.options.push(dbgai);
     end

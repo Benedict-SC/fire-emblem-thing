@@ -22,7 +22,7 @@ BattleCam = function()
             game.battle.actionMenu.configureSize(bc);
         end
     end
-    bc.recenter = function(b,x,y,instant)
+    bc.recenter = function(b,x,y,whendone,instant)
         bc.initialOffset = {x=bc.xoff,y=bc.yoff};
 
         local halftile = math.floor(game.tileSize / 2 + 0.5);
@@ -51,6 +51,7 @@ BattleCam = function()
         if (instant) then
             bc.xoff = targetOffset.x;
             bc.yoff = targetOffset.y;
+            if whendone then whendone(); end
         else
             bc.animation = async.doOverTime(0.3,function(percent) 
                 local prog = 1 - math.pow(1 - percent, 3);
@@ -61,6 +62,7 @@ BattleCam = function()
             end,function() 
                 bc.xoff = targetOffset.x;
                 bc.yoff = targetOffset.y;
+                if whendone then whendone(); end
             end);
         end
     end
