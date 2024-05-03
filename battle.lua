@@ -1,4 +1,5 @@
 require("pathfinding");
+MOVE_SPEED = 0.14;
 Battle = function(mapfile)
     local battle = {};
     battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK, REPOSITION, OVERVIEW, PREBATTLE, AI
@@ -7,6 +8,7 @@ Battle = function(mapfile)
     battle.camera = BattleCam();
 
     battle.selector = love.graphics.newImage("assets/img/selector.png");
+    battle.redSelector = love.graphics.newImage("assets/img/redtarget.png");
     battle.selectorPos = {x=5,y=5};
     battle.units = battle.map.units;
     battle.casualties = Array();
@@ -34,6 +36,11 @@ Battle = function(mapfile)
         if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" or battle.state == "REPOSITION" or battle.state == "OVERVIEW" then
             if (battle.selectorPos.x >= 1 and battle.selectorPos.y >= 1) then
                 love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize)
+            end
+        end
+        if battle.state == "AI" then
+            if battle.aiTargetingShown then
+                love.graphics.draw(battle.redSelector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize);
             end
         end
         love.graphics.popCanvas();
@@ -359,14 +366,16 @@ Battle = function(mapfile)
                 battle.state = "MAINPHASE";
             end
         else
-            local unused = battle.map.factionUnits(factionName).filter(function(x) 
-                return not x.used;
-            end);
-            if #unused <= 0 then
-                battle.changePhase();
-            else 
-                battle.takeNextAiTurn();
-            end            
+            async.wait(0.8, function()
+                local unused = battle.map.factionUnits(factionName).filter(function(x) 
+                    return not x.used;
+                end);
+                if #unused <= 0 then
+                    battle.changePhase();
+                else 
+                    battle.takeNextAiTurn();
+                end   
+            end);         
         end
     end
     --SECTION: MOVEMENT STATE PATHFINDING
@@ -486,11 +495,11 @@ Battle = function(mapfile)
                 battle.camera.recenter(battle,
                     battle.movePath[u.walkIndex].x,
                     battle.movePath[u.walkIndex].y);
-                async.doOverTime(0.06,segFunc,segEndFunc);
+                async.doOverTime(MOVE_SPEED,segFunc,segEndFunc);
             end
         end
         battle.state = "MOVING";
-        async.doOverTime(0.1,segFunc,segEndFunc);
+        async.doOverTime(MOVE_SPEED,segFunc,segEndFunc);
     end
     --SECTION: AI BEHAVIOR
     battle.moveToAttack = function(unit,decision)
@@ -504,13 +513,27 @@ Battle = function(mapfile)
         battle.beginMovement(whendone);
     end
     battle.takeNextAiTurn = function()
+        battle.state = "AI";
         local aiunit = battle.ai.getNextUnit();
         if aiunit then
+            --indicate they're about to move
+            battle.aiTargetingShown = true;
+            battle.selectorPos = {x=aiunit.unit.x,y=aiunit.unit.y};
+            if battle.aiFlashCancel then battle.aiFlashCancel.cancel = true; end
+            battle.aiFlashCancel = async.doOverTime(1.5,function(percent) 
+                local time = math.floor(percent*5);
+                battle.aiTargetingShown = time%2 == 0;
+            end,function() 
+                battle.aiTargetingShown = false;
+            end)
+            --move camera and then actually move them
             battle.recenterOn(aiunit.unit.x,aiunit.unit.y,function()
-                local didAnything = battle.ai.takeTurn(aiunit,battle);
-                if not didAnything then
-                    battle.endUnitsTurn(aiunit.unit);
-                end
+                async.wait(0.5,function()
+                    local didAnything = battle.ai.takeTurn(aiunit,battle);
+                    if not didAnything then
+                        battle.endUnitsTurn(aiunit.unit);
+                    end
+                end);
             end);
         else
             error("shouldn't reach here- endUnitsTurn does it");--battle.changePhase();
