@@ -3,7 +3,7 @@ AIManager = function()
     ai.unitList = Array();
     ai.assignUnitList = function(unitList)
         ai.unitList = unitList.map(function(x) 
-            return {unit=x};
+            return {unit=x,turnTaken=false};
         end);
     end
     ai.getPossibleCombats = function(unit,map)
@@ -78,44 +78,18 @@ AIManager = function()
             local decision = Decision(randomCombat.atk,randomCombat.def,{attackingWith=randomCombat.wep});
             if randomCombat.atk ~= ai.startNode then
                 decision.createPath(ai.startNode);
-                DEBUG_TEXT = "Path is ";
+                --[[DEBUG_TEXT = "Path is ";
                 for i=1,#decision.movePath,1 do
                     local pt = decision.movePath[i];
                     DEBUG_TEXT = DEBUG_TEXT .. "(" .. pt.x .. "," .. pt.y .. "),\n";
                 end
-                DEBUG_TEXT = DEBUG_TEXT .. "to attack " .. randomCombat.def.cell.occupant.name;
+                DEBUG_TEXT = DEBUG_TEXT .. "to attack " .. randomCombat.def.cell.occupant.name;--]]
             else
-                DEBUG_TEXT = "I'm attacking... " .. randomCombat.def.cell.occupant.name .. " from right here with " .. randomCombat.wep.name .. "\n";
+                --DEBUG_TEXT = "I'm attacking... " .. randomCombat.def.cell.occupant.name .. " from right here with " .. randomCombat.wep.name .. "\n";
             end
             return decision;
         end
         return nil;
-    end
-    ai.takeNextUnitTurn = function(battle,whendone)
-        local unit = ai.getNextUnit();
-        if not unit then
-           whendone(nil); --let battle handle transitions
-        end
-        local didSomething = ai.takeTurn(unit,battle);
-        if not didSomething then
-            whendone(unit);
-        end
-    end
-    ai.takeTurn = function(aiunit,battle)
-        local decision = ai.getDecision(aiunit.unit,battle.map);
-        if decision then
-            battle.moveToAttack(aiunit.unit,decision);
-            aiunit.turnTaken = true;
-            return true;
-        else
-            aiunit.turnTaken = true;
-            return false;
-        end
-    end
-    ai.beginTurn = function()
-        ai.unitList.forEach(function(x) 
-            x.turnTaken = false;
-        end);
     end
     ai.getNextUnit = function()
         for i=1,#ai.unitList,1 do
@@ -125,6 +99,10 @@ AIManager = function()
             end
         end
         return nil;
+    end
+    ai.prepareTurnIntention = function(aiunit,battle) 
+        aiunit.turnTaken = true;
+        return ai.getDecision(aiunit.unit,battle.map);
     end
 
     ai.update = function()

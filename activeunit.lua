@@ -69,6 +69,12 @@ ActiveUnit = function(unitdata)
             unit.equipIdx = idx;
         end
     end
+    unit.equipWeapon = function(weapon)
+        local itemIdx = unit.inventory.indexOf(weapon);
+        if itemIdx > 0 then
+            unit.equipIdx = itemIdx;
+        end;
+    end
     unit.getEquippedWeapon = function()
         if unit.equipIdx == 0 then return nil; end
         return unit.inventory[unit.equipIdx];

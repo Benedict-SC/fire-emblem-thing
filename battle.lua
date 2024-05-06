@@ -282,9 +282,10 @@ Battle = function(mapfile)
             end);
         else --they're alive!
             if unit.doesCanto() then
-
+                --TODO: create an AI behavior for canto movement (retreat out of enemy range if possible, else end turn)
+                --TODO: in the player case, do canto movement selection state
+                battle.endUnitsTurn(unit);
             else
-                --TODO: check if the turn is over and change phases if so
                 battle.endUnitsTurn(unit);
             end
         end
@@ -328,7 +329,6 @@ Battle = function(mapfile)
                     elseif faction == "ENEMY" then
                         battle.ai = AIManager();
                         battle.ai.assignUnitList(battle.map.enemyUnits());
-                        battle.ai.beginTurn();
                         battle.takeNextAiTurn();
                         battle.state = "AI";
                     end
@@ -502,39 +502,54 @@ Battle = function(mapfile)
         async.doOverTime(MOVE_SPEED,segFunc,segEndFunc);
     end
     --SECTION: AI BEHAVIOR
-    battle.moveToAttack = function(unit,decision)
+    battle.moveAndDo = function(unit,decision)
         battle.moveUnit = unit;
         battle.moveBudget = battle.moveUnit.mov;
         battle.movePath = decision.movePath;
         battle.moveStart = decision.movePath[1];
         local whendone = function()
-            battle.endUnitsTurn(unit);
+            if decision.options.attackingWith then
+                --Attack
+                unit.equipWeapon(decision.options.attackingWith);
+                battle.fight = Fight(unit,decision.targetNode.cell.occupant);
+                battle.fightScreen = FightScreen(battle.fight);
+                battle.clearOverlays();
+                battle.fightScreen.begin();
+                battle.state = "COMBAT";
+            else
+                battle.endUnitsTurn(unit); --Wait
+            end
         end
         battle.beginMovement(whendone);
+    end
+    battle.centerUnitOnAiTurn = function(aiunit,whendone)
+        --indicate that they're about to move
+        battle.aiTargetingShown = true;
+        battle.selectorPos = {x=aiunit.unit.x,y=aiunit.unit.y};
+        if battle.aiFlashCancel then battle.aiFlashCancel.cancel = true; end
+        battle.aiFlashCancel = async.doOverTime(1.5,function(percent) 
+            local time = math.floor(percent*5);
+            battle.aiTargetingShown = time%2 == 0;
+        end,function() 
+            battle.aiTargetingShown = false;
+        end)
+        --centering- happens in parallel, actually controls behavior
+        battle.recenterOn(aiunit.unit.x,aiunit.unit.y,whendone);
     end
     battle.takeNextAiTurn = function()
         battle.state = "AI";
         local aiunit = battle.ai.getNextUnit();
         if aiunit then
+            local decision = battle.ai.prepareTurnIntention(aiunit,battle);
+            local turnTakingFunction = function()
+                battle.moveAndDo(aiunit.unit,decision);
+            end
             --indicate they're about to move
-            battle.aiTargetingShown = true;
-            battle.selectorPos = {x=aiunit.unit.x,y=aiunit.unit.y};
-            if battle.aiFlashCancel then battle.aiFlashCancel.cancel = true; end
-            battle.aiFlashCancel = async.doOverTime(1.5,function(percent) 
-                local time = math.floor(percent*5);
-                battle.aiTargetingShown = time%2 == 0;
-            end,function() 
-                battle.aiTargetingShown = false;
-            end)
-            --move camera and then actually move them
-            battle.recenterOn(aiunit.unit.x,aiunit.unit.y,function()
-                async.wait(0.5,function()
-                    local didAnything = battle.ai.takeTurn(aiunit,battle);
-                    if not didAnything then
-                        battle.endUnitsTurn(aiunit.unit);
-                    end
-                end);
-            end);
+            if decision then
+                battle.centerUnitOnAiTurn(aiunit,turnTakingFunction);
+            else
+                battle.endUnitsTurn(aiunit.unit);
+            end
         else
             error("shouldn't reach here- endUnitsTurn does it");--battle.changePhase();
         end
