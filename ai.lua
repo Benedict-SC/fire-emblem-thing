@@ -58,6 +58,32 @@ AIManager = function()
         end
         return possibleCombats;
     end
+    ai.getFightPredictions = function(unit,map)
+        local unitsToConsider;
+        if unit.faction == "ENEMY" then
+            unitsToConsider = map.units.filter(function(x) return x.faction ~= "ENEMY"; end);
+        else
+            unitsToConsider = map.enemyUnits();
+        end
+        local fightPredictions = Array();
+        for i=1,#unitsToConsider,1 do
+            local opponent = unitsToConsider[i];
+            local weaponsToTry = unit.getWeapons();
+            for j=1,#weaponsToTry,1 do
+                unit.equipWeapon(weaponsToTry[j]);
+                local fightCalc = Fight(unit,opponent);
+                local prediction = {opponent=opponent,wep=weaponsToTry[j],damage=fightCalc.predictedDamage(0)}; --TODO: include risk calc
+                fightPredictions.push(prediction);
+            end
+        end
+
+        --[[DEBUG_TEXT = "";
+        for i=1,#fightPredictions,1 do
+            local fp = fightPredictions[i];
+            DEBUG_TEXT = DEBUG_TEXT .. fp.opponent.name .. " with " .. fp.wep.name .. ": " .. fp.damage .. "\n";
+        end]]-- 
+        return fightPredictions;
+    end
     ai.pickTarget = function(unit,map)
         local possibleCombats = ai.getPossibleCombats(unit,map);
         --DEBUG_TEXT = "" .. #possibleCombats .. " possible combats.";
@@ -72,6 +98,10 @@ AIManager = function()
     ai.getDecision = function(unit,map) 
         if (not unit.aiStrategy) or unit.aiStrategy == "SENTRY" then
             local possibleCombats = ai.pickTarget(unit,map);
+            local predictions = ai.getFightPredictions(unit,map);
+            --[[if #predictions > 1 then
+                error(DEBUG_TEXT);
+            end--]]
             local randomCombat = possibleCombats[math.random(#possibleCombats)]; --TODO: pick based on combat prediction
             if not randomCombat then return nil; end
             --DEBUG_TEXT = "I'm attacking... " .. randomCombat.def.cell.occupant.name .. " from (" .. randomCombat.atk.x .. "/" .. randomCombat.atk.y .. ") with " .. randomCombat.wep.name .. "\n";

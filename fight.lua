@@ -192,6 +192,31 @@ Fight = function(aggressor,defender)
         end
     end
 
+    fight.predictedDamage = function(riskCoefficient) --0 is safe, 1 is ignoring hit
+        local raw = fight.aDmg;
+        if fight.doTheyDouble(true) then
+            raw = raw * 2;
+        end
+        if fight.agg.getEquippedWeapon().brave then
+            raw = raw * 2;
+        end
+        local hitPrediction = ((fight.aHit * (1-riskCoefficient)) + (100 * riskCoefficient)) / 2;
+        return raw * (hitPrediction / 100);
+    end
+    fight.predictedCounterattack = function()
+        local raw = fight.dDmg;
+        if raw == -1 then return 0; end
+        if fight.dHit <= 0 then
+            return 0;
+        end
+        if fight.doTheyDouble(false) then
+            raw = raw * 2;
+        end
+        if fight.def.getEquippedWeapon().brave then
+            raw = raw * 2;
+        end
+        return raw * (fight.dHit / 100);
+    end
 
     return fight;
 end
