@@ -71,6 +71,10 @@ arrayify = function(bareArray)
 		end
 		return out;
 	end
+	bareArray.firstWhere = function(filterFunction)
+		local filtered = bareArray.filter(filterFunction);
+		return filtered[1];
+	end
 	bareArray.forEach = function(eachFunction)
 		for i=1,bareArray.size,1 do
 			eachFunction(bareArray[i]);
@@ -83,7 +87,10 @@ arrayify = function(bareArray)
 		end
 		return out;
 	end
-	bareArray.sorted = function(comparator) 
+	bareArray.sort = function(comparator) --sorts in place
+		table.sort(bareArray,comparator);
+	end
+	bareArray.sorted = function(comparator) --returns a sorted copy
 		local out = Array();
 		out = out.concatenate(bareArray);
 		table.sort(out,comparator);
@@ -102,6 +109,17 @@ arrayify = function(bareArray)
 		return bareArray.map(function(x) 
 			return x;
 		end);
+	end
+	bareArray.toString = function()
+		local str = "[";
+		for i=1,#bareArray,1 do
+			str = str .. dump(bareArray[i]);
+			if not i == #bareArray then
+				str = str .. ", ";
+			end
+		end
+		str = str .. "]"
+		return str;
 	end
 	return bareArray;
 end
@@ -194,3 +212,16 @@ subArray = function(array,startIndex,length)
 	return subarray;
 end
 math.tau = math.pi*2;
+dump = function(o) --https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
+	if type(o) == 'table' then
+	   local s = '{ '
+	   for k,v in pairs(o) do
+		  if type(k) ~= 'number' then k = '"'..k..'"' end
+		  s = s .. '['..k..'] = ' .. dump(v) .. ','
+	   end
+	   return s .. '} '
+	else
+	   return tostring(o)
+	end
+end
+ 

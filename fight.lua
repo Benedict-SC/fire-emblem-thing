@@ -4,10 +4,11 @@ fightX2Icon = love.graphics.newImage("assets/img/x2.png");
 fightX4Icon = love.graphics.newImage("assets/img/x4.png");
 fiteHites = {57,88,124,158}; --y
 fiteSites = {22,55,92}; --x
-Fight = function(aggressor,defender)
+Fight = function(aggressor,defender,hypotheticalPosition)
     local fight = {};
     fight.agg = aggressor;
     fight.def = defender;
+    fight.hypotheticalPosition = hypotheticalPosition;
 
     fight.renderPreview = function()
         love.graphics.setColor(1,1,1,1);
@@ -126,7 +127,9 @@ Fight = function(aggressor,defender)
         return unit.spd - aWeightMalus;
     end
     fight.defenderCanCounter = function()
-        local dist = manhattan(fight.agg,fight.def);
+        local attackLocation = fight.agg;
+        if fight.hypotheticalPosition then attackLocation = fight.hypotheticalPosition; end
+        local dist = manhattan(attackLocation,fight.def);
         local dwep = fight.def.getEquippedWeapon();
         if not dwep then return false; end
         return dwep.range.has(dist);

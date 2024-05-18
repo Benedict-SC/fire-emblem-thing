@@ -71,7 +71,17 @@ Pathfinding.dijkstra = function(startNode,budget) --modified dijkstra that gets 
         open.removeItem(cheapest);
         closed.push(cheapest);
     end
-    return closed.filter(function(x) return x.costSoFar <= budget end);
+    if budget then
+        return closed.filter(function(x) return x.costSoFar <= budget end);
+    else
+        return closed;
+    end
+end
+Pathfinding.intersectionWithOtherNodes = function(nodes1D,otherNodes1D) --when multiple node lists are generated for different purposes, get a subset of one that has cells in common with another
+    local otherCells = otherNodes1D.map(function(x) return x.cell end);
+    return nodes1D.filter(function(x) 
+        return otherCells.has(x.cell);
+    end);
 end
 
 

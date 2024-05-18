@@ -502,11 +502,7 @@ Battle = function(mapfile)
         async.doOverTime(MOVE_SPEED,segFunc,segEndFunc);
     end
     --SECTION: AI BEHAVIOR
-    battle.moveAndDo = function(unit,decision)
-        battle.moveUnit = unit;
-        battle.moveBudget = battle.moveUnit.mov;
-        battle.movePath = decision.movePath;
-        battle.moveStart = decision.movePath[1];
+    battle.executeAction = function(unit,decision)
         local whendone = function()
             if decision.options.attackingWith then
                 --Attack
@@ -520,7 +516,16 @@ Battle = function(mapfile)
                 battle.endUnitsTurn(unit); --Wait
             end
         end
-        battle.beginMovement(whendone);
+        if decision.movePath then      
+            battle.moveUnit = unit;
+            battle.moveBudget = battle.moveUnit.mov;
+            battle.movePath = decision.movePath;
+            battle.moveStart = decision.movePath[1];
+            print("unit " .. unit.name .. " is moving");
+            battle.beginMovement(whendone);
+        else
+            whendone();
+        end
     end
     battle.centerUnitOnAiTurn = function(aiunit,whendone)
         --indicate that they're about to move
@@ -542,7 +547,7 @@ Battle = function(mapfile)
         if aiunit then
             local decision = battle.ai.prepareTurnIntention(aiunit,battle);
             local turnTakingFunction = function()
-                battle.moveAndDo(aiunit.unit,decision);
+                battle.executeAction(aiunit.unit,decision);
             end
             --indicate they're about to move
             if decision then
