@@ -1,10 +1,5 @@
 --require("util");
 require("terrain");
-tiles = {
-    love.graphics.newImage("assets/img/grass.png"),
-    love.graphics.newImage("assets/img/forest.png"),
-    love.graphics.newImage("assets/img/hill.png")
-}
 moveOverlay = love.graphics.newImage("assets/img/rangeMove.png");
 hitOverlay = love.graphics.newImage("assets/img/rangeHit.png");
 repositionOverlay = love.graphics.newImage("assets/img/startingPosition.png");
@@ -35,6 +30,7 @@ Map = function(filename)
             local sourceCell = data.tiles[i][j];
             local cell = Cell(sourceCell.tile);
             cell.isStartingPosition = sourceCell.isStartingPosition;
+            cell.walls = sourceCell.walls;
 
             row.push(cell);
         end
@@ -95,7 +91,7 @@ Map = function(filename)
             for j=1,#(map.cells[1]),1 do
                 local cell = map.cells[i][j]
                 local tilecode = cell.terrainType;
-                love.graphics.draw(tiles[tilecode],(j-1)*game.tileSize,(i-1)*game.tileSize);
+                love.graphics.draw(terrainImages[tilecode],(j-1)*game.tileSize,(i-1)*game.tileSize);
             end
         end
     end
@@ -173,10 +169,50 @@ Map = function(filename)
                 local s = (i < #nodes) and nodes[i+1][j] or false;
                 local w = (j > 1) and nodes[i][j-1] or false;
                 local e = (j < #nodes[i]) and nodes[i][j+1] or false;
-                if n then node.connections.push(Connection(map.costToEnter(unit,n.cell),node,n)); end
-                if s then node.connections.push(Connection(map.costToEnter(unit,s.cell),node,s)); end
-                if w then node.connections.push(Connection(map.costToEnter(unit,w.cell),node,w)); end
-                if e then node.connections.push(Connection(map.costToEnter(unit,e.cell),node,e)); end
+                if n then 
+                    local cost = map.costToEnter(unit,n.cell);
+                    if n.cell.walls and n.cell.walls.s then
+                        if n.cell.walls.s == "HIGH" then
+                            cost = 999;
+                        elseif unit.class.movementType() ~= "FLYING" then
+                            cost = 999;
+                        end
+                    end
+                    node.connections.push(Connection(cost,node,n)); 
+                end
+                if s then 
+                    local cost = map.costToEnter(unit,s.cell);
+                    if s.cell.walls and s.cell.walls.n then
+                        if s.cell.walls.n == "HIGH" then
+                            cost = 999;
+                        elseif unit.class.movementType() ~= "FLYING" then
+                            cost = 999;
+                        end
+                    end
+                    node.connections.push(Connection(cost,node,s)); 
+                end
+                if w then 
+                    local cost = map.costToEnter(unit,w.cell);
+                    if w.cell.walls and w.cell.walls.e then
+                        if w.cell.walls.e == "HIGH" then
+                            cost = 999;
+                        elseif unit.class.movementType() ~= "FLYING" then
+                            cost = 999;
+                        end
+                    end
+                    node.connections.push(Connection(cost,node,w)); 
+                end
+                if e then 
+                    local cost = map.costToEnter(unit,e.cell);
+                    if e.cell.walls and e.cell.walls.w then
+                        if e.cell.walls.w == "HIGH" then
+                            cost = 999;
+                        elseif unit.class.movementType() ~= "FLYING" then
+                            cost = 999;
+                        end
+                    end
+                    node.connections.push(Connection(cost,node,e)); 
+                end
             end
         end
         return nodes;

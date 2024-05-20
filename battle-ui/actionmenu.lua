@@ -70,7 +70,7 @@ ActionMenu = function(unit)
     --RESCUE
     --STEAL
     --ITEM
-    if unit.inventory.filter(function(x) return x.usable(); end).size > 0 then
+    if #(unit.inventory.filter(function(x) return x.usable(); end)) > 0 then
         local itemOption = {name="Item"};
         itemOption.onPick = function()
             --open up the inventory screen and go to inventory state
@@ -105,7 +105,7 @@ ActionMenu = function(unit)
         local leftEdge = rightEdge - math.floor(adjustedTileSize + 0.5);
         local topEdge = bottomEdge - math.floor(adjustedTileSize + 0.5);
 
-        local height = (am.box.bh*2) + ((am.options.size) * actionMenuOptionHeight); 
+        local height = (am.box.bh*2) + (#(am.options) * actionMenuOptionHeight); 
 
         local x = rightEdge;
         if rightEdge + am.box.w > gamewidth then
@@ -137,8 +137,8 @@ ActionMenu = function(unit)
     end
     am.moveCursor = function(dir)
         am.cursorPosition = am.cursorPosition + dir;
-        if am.cursorPosition < 1 then am.cursorPosition = am.options.size; end
-        if am.cursorPosition > am.options.size then am.cursorPosition = 1; end
+        if am.cursorPosition < 1 then am.cursorPosition = #(am.options); end
+        if am.cursorPosition > #(am.options) then am.cursorPosition = 1; end
         am.toggleAttackRanges();
     end
     am.setCursorWithMouse = function(mapzoom)
@@ -152,7 +152,7 @@ ActionMenu = function(unit)
         end
         local y = my - bounds.y;
         local idx = math.ceil((y-am.box.bh) / actionMenuOptionHeight);
-        if idx <= 0 or idx > am.options.size then
+        if idx <= 0 or idx > #(am.options) then
             am.cursorPosition = 0;
             am.toggleAttackRanges();
             return;

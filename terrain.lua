@@ -2,6 +2,7 @@ movementTypes = {"FOOT","HORSE","MAGIC","FLYING"};
 terrain = Array();
 local terrainJson = love.filesystem.read("defaults/terrain.json");
 local terrainData = json.decode(terrainJson);
+terrainImages = Array();
 for i=1,#terrainData,1 do
     local terrainObj = {};
     terrainObj.name = terrainData[i].name;
@@ -14,6 +15,7 @@ for i=1,#terrainData,1 do
         return cost;
     end
     terrain.push(terrainObj);
+    terrainImages.push(love.graphics.newImage(terrainData[i].imgPath));
 end
 nativeTerrainLength = #terrain;
 local customTerrainJson = love.filesystem.read("custom/terrain.json");
@@ -30,6 +32,7 @@ for i=1,#customTerrainData,1 do
         return cost;
     end
     terrain.push(terrainObj);
+    terrainImages[1000 + i] = love.graphics.newImage(terrainData[i].imgPath);
 end
 --[[terrain = {
     {name="Grass",costToEnter = function(movtype) 

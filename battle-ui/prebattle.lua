@@ -70,8 +70,8 @@ PreBattleMenu = function()
     end
     pbm.moveCursor = function(dir)
         pbm.cursorPosition = pbm.cursorPosition + dir;
-        if pbm.cursorPosition < 1 then pbm.cursorPosition = pbm.options.size; end
-        if pbm.cursorPosition > pbm.options.size then pbm.cursorPosition = 1; end
+        if pbm.cursorPosition < 1 then pbm.cursorPosition = #(pbm.options); end
+        if pbm.cursorPosition > #(pbm.options) then pbm.cursorPosition = 1; end
     end
     pbm.setCursorWithMouse = function()
         local mx,my = love.mouse.getPosition();
@@ -82,7 +82,7 @@ PreBattleMenu = function()
         end
         local y = my - pbm.bounds.y;
         local idx = math.ceil((y-pbm.box.bh) / prebattleMenuOptionHeight);
-        if idx <= 0 or idx > pbm.options.size then
+        if idx <= 0 or idx > #(pbm.options) then
             pbm.cursorPosition = 0;
             return;
         end

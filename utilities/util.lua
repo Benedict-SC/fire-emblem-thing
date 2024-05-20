@@ -12,20 +12,26 @@ arrayify = function(bareArray)
 	if bareArray == nil then
 		return nil;
 	end
-    bareArray.size = #bareArray;
+    bareArray.size = function()
+		return #bareArray;
+	end
 	bareArray.push = function(el)
-		bareArray.size = bareArray.size + 1;
-		bareArray[bareArray.size] = el;
+		bareArray[#bareArray + 1] = el;
 	end
 	bareArray.pop = function()
-		local val = bareArray[bareArray.size];
-		bareArray[bareArray.size] = nil;
-		bareArray.size = bareArray.size - 1;
+		local val = bareArray[#bareArray];
+		bareArray[#bareArray] = nil;
 
 		return val;
 	end
 	bareArray.peek = function()
-		return bareArray[bareArray.size];
+		return bareArray[#bareArray];
+	end
+	bareArray.insert = function(insertIndex,item)
+		for i=#bareArray,insertIndex,-1 do
+			bareArray[i+1] = bareArray[i]
+		end
+		bareArray[insertIndex] = item;
 	end
     bareArray.concatenate = function(otherArray)
         for i=1,#otherArray,1 do
@@ -55,18 +61,16 @@ arrayify = function(bareArray)
 	end
 	bareArray.remove = function(idx)
 		table.remove(bareArray,idx);
-		bareArray.size = bareArray.size - 1;
 	end
 	bareArray.removeItem = function(obj)
 		local idx = bareArray.indexOf(obj);
 		if idx >= 1 then
 			table.remove(bareArray,idx);
-			bareArray.size = bareArray.size - 1;
 		end
 	end
 	bareArray.filter = function(filterFunction)
 		local out = Array();
-		for i=1,bareArray.size,1 do
+		for i=1,#bareArray,1 do
 			if filterFunction(bareArray[i]) then out.push(bareArray[i]) end
 		end
 		return out;
@@ -76,13 +80,13 @@ arrayify = function(bareArray)
 		return filtered[1];
 	end
 	bareArray.forEach = function(eachFunction)
-		for i=1,bareArray.size,1 do
+		for i=1,#bareArray,1 do
 			eachFunction(bareArray[i]);
 		end
 	end
 	bareArray.map = function(mapFunction)
 		local out = Array();
-		for i=1,bareArray.size,1 do
+		for i=1,#bareArray,1 do
 			out.push(mapFunction(bareArray[i]));
 		end
 		return out;

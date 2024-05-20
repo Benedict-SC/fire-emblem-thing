@@ -22,7 +22,7 @@ Pathfinding.displayRange = function(unit,battle)
             local manhattanNeighbors = nodesWithoutFriends.filter(function(x) 
                 return x.manhattanDistance(target) == ranges[i];
             end);
-            if manhattanNeighbors.size > 0 then 
+            if #manhattanNeighbors > 0 then 
                 unmarked[j].hittable = true;
             end
         end
@@ -104,6 +104,14 @@ Node = function(x,y,cell) --these are used by pathfinding and are ephemeral, las
         local mhd = math.abs(node2.x - node.x) + math.abs(node2.y - node.y);
         --print(mhd);
         return mhd;
+    end
+    node.costToNode = function (node2)
+        for i=1,#node.connections,1 do
+            if node.connections[i].dest == node2 then
+                return node.connections[i].cost;
+            end
+        end
+        return 999;
     end
 
     return node;

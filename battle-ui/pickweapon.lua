@@ -76,7 +76,7 @@ PickWeapon = function(unit)
         local leftEdge = rightEdge - math.floor(adjustedTileSize + 0.5);
         local topEdge = bottomEdge - math.floor(adjustedTileSize + 0.5);
 
-        local height = (pw.box.bh*2) + ((pw.unit.inventory.size) * pickWeaponOptionHeight); 
+        local height = (pw.box.bh*2) + (#(pw.unit.inventory) * pickWeaponOptionHeight); 
 
         local x = rightEdge;
         if rightEdge + pw.box.w > gamewidth then
@@ -114,8 +114,8 @@ PickWeapon = function(unit)
     end
     pw.moveCursor = function(dir)
         pw.cursorPosition = pw.cursorPosition + dir;
-        if pw.cursorPosition < 1 then pw.cursorPosition = pw.unit.inventory.size; end
-        if pw.cursorPosition > pw.unit.inventory.size then pw.cursorPosition = 1; end
+        if pw.cursorPosition < 1 then pw.cursorPosition = #(pw.unit.inventory); end
+        if pw.cursorPosition > #(pw.unit.inventory) then pw.cursorPosition = 1; end
         pw.toggleAttackRanges();
     end
     pw.setCursorWithMouse = function(mapzoom)
@@ -129,7 +129,7 @@ PickWeapon = function(unit)
         end
         local y = my - bounds.y;
         local idx = math.ceil((y-pw.box.bh) / pickWeaponOptionHeight);
-        if idx <= 0 or idx > pw.unit.inventory.size then
+        if idx <= 0 or idx > #(pw.unit.inventory) then
             pw.cursorPosition = 0;
             pw.toggleAttackRanges();
             return;

@@ -44,7 +44,7 @@ AIManager = function()
                 manhattanNeighbors = manhattanNeighbors.filter(function(x)
                     return x.cell.occupant == nil;
                 end);
-                if manhattanNeighbors.size > 0 then 
+                if #manhattanNeighbors > 0 then 
                     local weps = unit.getWeapons();
                     weps = weps.filter(function(x) return x.hasRange(ranges[i]) end); --consider only combats with weapons that can actually reach from these spaces
                     for k=1,#weps,1 do
@@ -128,7 +128,9 @@ AIManager = function()
             local predictions = ai.getFightPredictions(unit,map);
             --select a best combat and store a reference to the enemy unit in that combat
             local sortedPredictions = ai.rankPredictions(unit,predictions)
-            if #sortedPredictions < 1 then return nil; end --won't usually happen, but just in case we're doing debug stuff
+            if #sortedPredictions < 1 then --won't usually happen, but just in case we're doing debug stuff
+                return nil; 
+            end
             local bestTarget = sortedPredictions[1];
             --create a new nodes list, find the node containing the enemy, and fill that list with nav data
             local navNodes = map.nodes(unit);
@@ -149,6 +151,11 @@ AIManager = function()
             local decision = Decision(realIntermediateTarget,nil,{waiting=true});
             decision.createPath(ai.startNode); --no need to check if the attack is already here- there's no attack, you're definitely moving if you're in this state;
             return decision;
+        elseif unit.aiStrategy == "OBJECTIVE" then
+            --get the objective tile somehow
+            local navNodes = map.nodes(unit);
+            local targetNode = navNodes.oneDimensionDown().filter(function(x) return x.cell.occupant == bestTarget.opponent end);
+            
         else
             print(unit.name .. " has an unknown AI situation and ends turn");
             return nil;

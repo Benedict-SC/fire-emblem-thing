@@ -50,7 +50,7 @@ BlankMenu = function(x,y)
         local leftEdge = rightEdge - math.floor(adjustedTileSize + 0.5);
         local topEdge = bottomEdge - math.floor(adjustedTileSize + 0.5);
 
-        local height = (am.box.bh*2) + ((am.options.size) * blankMenuOptionHeight); 
+        local height = (am.box.bh*2) + (#(am.options) * blankMenuOptionHeight); 
 
         local x = rightEdge;
         if rightEdge + am.box.w > gamewidth then
@@ -83,8 +83,8 @@ BlankMenu = function(x,y)
     end
     am.moveCursor = function(dir)
         am.cursorPosition = am.cursorPosition + dir;
-        if am.cursorPosition < 1 then am.cursorPosition = am.options.size; end
-        if am.cursorPosition > am.options.size then am.cursorPosition = 1; end
+        if am.cursorPosition < 1 then am.cursorPosition = #(am.options); end
+        if am.cursorPosition > #(am.options) then am.cursorPosition = 1; end
     end
     am.setCursorWithMouse = function(mapzoom)
         local bounds = am.getBounds(mapzoom);
@@ -96,7 +96,7 @@ BlankMenu = function(x,y)
         end
         local y = my - bounds.y;
         local idx = math.ceil((y-am.box.bh) / blankMenuOptionHeight);
-        if idx <= 0 or idx > am.options.size then
+        if idx <= 0 or idx > #(am.options) then
             am.cursorPosition = 0;
             return;
         end

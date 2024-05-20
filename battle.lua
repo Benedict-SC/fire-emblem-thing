@@ -417,9 +417,11 @@ Battle = function(mapfile)
         if battle.movePath.has(hoverNode) then
             local clippedPath = Array();
             battle.moveCSF = 0; --reset CSF
+            local lastNode = battle.movePath[#battle.movePath];
             for i=1,#(battle.movePath),1 do --re-add it to the path and update cost-so-far
                 local clipNode = battle.movePath[i];
-                local clipCSF = battle.map.costToEnter(battle.moveUnit,battle.map.cellFromNode(clipNode));
+                local clipCSF = lastNode.costToNode(clipNode);--battle.map.costToEnter(battle.moveUnit,battle.map.cellFromNode(clipNode));
+                lastNode = clipNode;
                 clippedPath.push(battle.movePath[i]);
                 if clipNode ~= battle.moveStart then
                     battle.moveCSF = battle.moveCSF + clipCSF;
@@ -434,7 +436,7 @@ Battle = function(mapfile)
         --otherwise, it's an unfamiliar node. 
         if dist == 1 then --we're adding to the continuity of the path
             --first, check the cost and see if it's in our movement budget.
-            local nodeCost = battle.map.costToEnter(battle.moveUnit,hoverCell);
+            local nodeCost = battle.movePath[#battle.movePath].costToNode(hoverNode);--battle.map.costToEnter(battle.moveUnit,hoverCell);
             if battle.moveCSF + nodeCost <= battle.moveBudget then --we're fine
                 battle.movePath.push(hoverNode);
                 battle.moveCSF = battle.moveCSF + nodeCost;
@@ -636,7 +638,7 @@ Battle = function(mapfile)
             local x = math.floor(mx/game.tileSize) + 1;
             local y = math.floor(my/game.tileSize) + 1;
             local matchingUnits = battle.horizontalTargetList.filter(function(u) return u.x == x and u.y == y; end);
-            if matchingUnits.size > 0 then
+            if #matchingUnits > 0 then
                 local unit = matchingUnits[1];
                 battle.horizontalTargetIndex = battle.horizontalTargetList.indexOf(unit);
                 battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
@@ -647,7 +649,7 @@ Battle = function(mapfile)
         elseif controlMode == "KEYBOARD" then
             if pressedThisFrame["right"] then
                 battle.horizontalTargetIndex = battle.horizontalTargetIndex + 1;
-                if battle.horizontalTargetIndex > battle.horizontalTargetList.size then
+                if battle.horizontalTargetIndex > #(battle.horizontalTargetList) then
                     battle.horizontalTargetIndex = 1;
                 end
                 local unit = battle.horizontalTargetList[battle.horizontalTargetIndex];
@@ -657,7 +659,7 @@ Battle = function(mapfile)
             elseif pressedThisFrame["left"] then
                 battle.horizontalTargetIndex = battle.horizontalTargetIndex - 1;
                 if battle.horizontalTargetIndex < 1 then
-                    battle.horizontalTargetIndex = battle.horizontalTargetList.size;
+                    battle.horizontalTargetIndex = #(battle.horizontalTargetList);
                 end
                 local unit = battle.horizontalTargetList[battle.horizontalTargetIndex];
                 battle.verticalTargetIndex = battle.verticalTargetList.indexOf(unit);
@@ -665,7 +667,7 @@ Battle = function(mapfile)
                 battle.selectorPos.y = unit.y;
             elseif pressedThisFrame["down"] then
                 battle.verticalTargetIndex = battle.verticalTargetIndex + 1;
-                if battle.verticalTargetIndex > battle.verticalTargetList.size then
+                if battle.verticalTargetIndex > #(battle.verticalTargetList) then
                     battle.verticalTargetIndex = 1;
                 end
                 local unit = battle.verticalTargetList[battle.verticalTargetIndex];
@@ -675,7 +677,7 @@ Battle = function(mapfile)
             elseif pressedThisFrame["up"] then
                 battle.verticalTargetIndex = battle.verticalTargetIndex - 1;
                 if battle.verticalTargetIndex < 1 then
-                    battle.verticalTargetIndex = battle.verticalTargetList.size;
+                    battle.verticalTargetIndex = #(battle.verticalTargetList);
                 end
                 
                 local unit = battle.verticalTargetList[battle.verticalTargetIndex];
@@ -694,7 +696,7 @@ Battle = function(mapfile)
                 local matchingUnits = battle.verticalTargetList.filter(function(unit) 
                     return (unit.x == targetSpace.x) and (unit.y == targetSpace.y);
                 end);
-                if (matchingUnits.size > 0) then
+                if (#matchingUnits > 0) then
                     local unit = matchingUnits[1];
                     battle.selectorPos.x = unit.x;
                     battle.selectorPos.y = unit.y;
@@ -708,7 +710,7 @@ Battle = function(mapfile)
                     local matchingUnits = battle.verticalTargetList.filter(function(unit) 
                         return (unit.x == targetSpace.x) and (unit.y == targetSpace.y);
                     end);
-                    if matchingUnits.size >= 1 then
+                    if #matchingUnits >= 1 then
                         local unit = matchingUnits[1];
                         battle.selectorPos.x = unit.x;
                         battle.selectorPos.y = unit.y;
@@ -721,9 +723,9 @@ Battle = function(mapfile)
                     if vec.y == 0 then 
                         battle.horizontalTargetIndex = battle.horizontalTargetIndex + vec.x;
                         if battle.horizontalTargetIndex < 1 then
-                            battle.horizontalTargetIndex = battle.horizontalTargetList.size;
+                            battle.horizontalTargetIndex = #(battle.horizontalTargetList);
                         end  
-                        if battle.horizontalTargetIndex > battle.horizontalTargetList.size then
+                        if battle.horizontalTargetIndex > #(battle.horizontalTargetList) then
                             battle.horizontalTargetIndex = 1;
                         end
                         local unit = battle.horizontalTargetList[battle.horizontalTargetIndex];
@@ -733,9 +735,9 @@ Battle = function(mapfile)
                     else
                         battle.verticalTargetIndex = battle.verticalTargetIndex + vec.y;
                         if battle.verticalTargetIndex < 1 then
-                            battle.verticalTargetIndex = battle.verticalTargetList.size;
+                            battle.verticalTargetIndex = #(battle.verticalTargetList);
                         end
-                        if battle.verticalTargetIndex > battle.verticalTargetList.size then
+                        if battle.verticalTargetIndex > #(battle.verticalTargetList) then
                             battle.verticalTargetIndex = 1;
                         end
                         
@@ -787,8 +789,8 @@ Battle = function(mapfile)
     end
     battle.selectorInBounds = function()
         local s = battle.selectorPos;
-        local maxX = battle.map.cells[1].size;
-        local maxY = battle.map.cells.size;
+        local maxX = #(battle.map.cells[1]);
+        local maxY = #(battle.map.cells);
         return s.x > 0 and s.x <= maxX and s.y > 0 and s.y <= maxY;
     end
     return battle;
