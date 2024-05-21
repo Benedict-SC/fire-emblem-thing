@@ -216,16 +216,20 @@ subArray = function(array,startIndex,length)
 	return subarray;
 end
 math.tau = math.pi*2;
-dump = function(o) --https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
+dump = function(o,depth) --https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console, modified to not go infinite on circular refs
+	if not depth then depth = 2; end
 	if type(o) == 'table' then
+		if depth == 0 then
+			return "[table value past depth]";
+		end
 	   local s = '{ '
 	   for k,v in pairs(o) do
 		  if type(k) ~= 'number' then k = '"'..k..'"' end
-		  s = s .. '['..k..'] = ' .. dump(v) .. ','
+		  s = s .. '['..k..'] = ' .. dump(v,depth-1) .. ','
 	   end
 	   return s .. '} '
 	else
-	   return tostring(o)
+	   return tostring(o);
 	end
 end
  

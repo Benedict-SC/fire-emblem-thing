@@ -153,9 +153,17 @@ AIManager = function()
             return decision;
         elseif unit.aiStrategy == "OBJECTIVE" then
             --get the objective tile somehow
+            local objective = map.interacts[unit.aiObjectiveId];
             local navNodes = map.nodes(unit);
-            local targetNode = navNodes.oneDimensionDown().filter(function(x) return x.cell.occupant == bestTarget.opponent end);
-            
+            local targetNode = navNodes.oneDimensionDown().filter(function(x) return x.cell.interaction == objective end)[1];
+            if targetNode then
+                print("we found target node " .. targetNode.x .. "," .. targetNode.y);
+                --check if your objective is in range. if so, just go to it and do it.
+                --otherwise, pick the X closest reachable nodes to the target, and check if any of them coincide with your possibleCombats.
+                --if they do, pick a possible combat and go do that one. break out SENTRY logic so this can just call that.
+            else
+                return nil; --objective somehow doesn't exist
+            end
         else
             print(unit.name .. " has an unknown AI situation and ends turn");
             return nil;

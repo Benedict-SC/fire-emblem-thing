@@ -160,6 +160,17 @@ ActionMenu = function(unit)
         am.cursorPosition = idx;
         am.toggleAttackRanges();
     end
+    am.addOption = function(option,index)
+        if index then            
+            if index > #(am.options) + 1 then 
+                index = am.options + 1; 
+            end
+            am.options.insert(index,option);
+        else
+            am.options.push(option);
+        end
+        am.configureSize();
+    end
     am.toggleAttackRanges = function()
         local show = am.cursorPosition ~= 0 and am.options[am.cursorPosition].name == "Attack";
         --DEBUG_TEXT = "show is " .. (show and "true" or "false");

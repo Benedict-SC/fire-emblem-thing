@@ -6,8 +6,9 @@ ActiveUnit = function(unitdata)
     unit.portraitFile = unitdata.portraitFile;
 
     unit.faction = unitdata.faction or "ENEMY";
-    unit.aiStrategy = "AGGRO";
-    unit.aiTactics = "NORMAL";
+    unit.aiStrategy = unitdata.aiStrategy or "AGGRO";
+    unit.aiTactics = unitdata.aiTactics or "NORMAL";
+    unit.aiObjectiveId = unitdata.aiObjectiveId;
     unit.used = false;
 
     unit.class = UnitClass();

@@ -183,6 +183,7 @@ Battle = function(mapfile)
                 elseif cell.occupant == battle.moveUnit then 
                     --that's you- you're not moving, go straight to the action state.
                     battle.actionMenu = ActionMenu(battle.moveUnit);
+                    if cell.interaction then cell.interaction.addMenuOption(battle.actionMenu); end
                     battle.originalCoords = {y=battle.moveUnit.y,x=battle.moveUnit.x};
                     battle.resetPathing();
                     battle.state = "ACTION"; --TODO: ACTION
@@ -201,6 +202,7 @@ Battle = function(mapfile)
                     local mover = battle.moveUnit;
                     local whendone = function() 
                         battle.actionMenu = ActionMenu(mover);
+                        if cell.interaction then cell.interaction.addMenuOption(battle.actionMenu); end
                         battle.state = "ACTION";
                     end
                     battle.beginMovement(whendone);
@@ -296,10 +298,18 @@ Battle = function(mapfile)
         end);
         battle.activeFaction = battle.activeFaction + 1;
         if battle.activeFaction > #(battle.map.factionOrder) then battle.activeFaction = 1; end
+        local faction = battle.map.factionOrder[battle.activeFaction];
+
+        if faction == "ENEMY" then
+            if #(battle.map.enemyUnits()) <= 0 then
+                battle.activeFaction = battle.activeFaction + 1;
+                if battle.activeFaction > #(battle.map.factionOrder) then battle.activeFaction = 1; end
+                faction = battle.map.factionOrder[battle.activeFaction];
+            end
+        end
 
         battle.state = "DISPLAY";
         battle.displayStuff = Array();
-        local faction = battle.map.factionOrder[battle.activeFaction];
         local factionBannerUrl = "assets/img/phase-other.png";
         local soundId = "otherphase";
         if faction == "PLAYER" then

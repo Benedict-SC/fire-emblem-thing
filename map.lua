@@ -2,12 +2,14 @@
 require("terrain");
 moveOverlay = love.graphics.newImage("assets/img/rangeMove.png");
 hitOverlay = love.graphics.newImage("assets/img/rangeHit.png");
+interactOverlay = love.graphics.newImage("assets/img/interactTile.png");
 repositionOverlay = love.graphics.newImage("assets/img/startingPosition.png");
 errorImg = love.graphics.newImage("assets/img/qmark.png");
 Map = function(filename)
     local map = {};
     map.cells = Array();
     map.units = Array();
+    map.interacts = {};
     map.playerUnits = function()
         return map.units.filter(function(x) return x.faction == "PLAYER"; end);
     end
@@ -31,6 +33,12 @@ Map = function(filename)
             local cell = Cell(sourceCell.tile);
             cell.isStartingPosition = sourceCell.isStartingPosition;
             cell.walls = sourceCell.walls;
+            if sourceCell.interaction then
+                local si = sourceCell.interaction;
+                local int = Interaction(si);
+                map.interacts[si.id] = int;
+                cell.interaction = int;
+            end
 
             row.push(cell);
         end
@@ -109,6 +117,9 @@ Map = function(filename)
                     love.graphics.draw(moveOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 elseif cell.hitOn then
                     love.graphics.draw(hitOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
+                end
+                if cell.interaction and cell.interaction.displaysOnMap then
+                    love.graphics.draw(interactOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 end
             end
         end
