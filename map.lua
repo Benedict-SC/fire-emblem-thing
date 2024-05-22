@@ -131,9 +131,11 @@ Map = function(filename)
                 elseif cell.hitOn then
                     love.graphics.draw(hitOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 end
+                local drewObjective = false;
                 cell.interactions.forEach(function(x) 
-                    if x.displaysOnMap then
+                    if x.displaysOnMap and not drewObjective then
                         love.graphics.draw(interactOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
+                        drewObjective = true;
                     end
                 end);
             end

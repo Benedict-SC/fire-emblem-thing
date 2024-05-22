@@ -42,7 +42,7 @@ AIManager = function()
                     return x.marked; --only consider combats from reachable spaces
                 end);
                 manhattanNeighbors = manhattanNeighbors.filter(function(x)
-                    return x.cell.occupant == nil;
+                    return (x.cell.occupant == nil) or (x.cell.occupant == unit);
                 end);
                 if #manhattanNeighbors > 0 then 
                     local weps = unit.getWeapons();

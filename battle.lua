@@ -239,7 +239,7 @@ Battle = function(mapfile)
             else
                 if controlMode == "MOUSE" then
                     menuToControl.setCursorWithMouse(battle.camera);
-                    if battle.input_select() then
+                    if battle.input_select(true) then
                         menuToControl.executeCurrentOption();
                     end
                 else

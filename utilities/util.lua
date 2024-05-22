@@ -10,7 +10,7 @@ Array = function(...)
 end
 arrayify = function(bareArray)
 	if bareArray == nil then
-		return nil;
+		return Array();
 	end
     bareArray.size = function()
 		return #bareArray;
