@@ -95,6 +95,7 @@ Cell = function(code) --these are used to store map data and persist
     cell.terrainType = code;
     cell.moveOn = false;
     cell.hitOn = false;
+    cell.interactions = Array();
     return cell;
 end
 Node = function(x,y,cell) --these are used by pathfinding and are ephemeral, lasting only for the current navigation action

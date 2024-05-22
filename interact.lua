@@ -14,11 +14,15 @@ Interaction = function(sourceData)
             propToSack.img = love.graphics.newImage("assets/img/sackedcassle.png");
             int.displaysOnMap = false;
             game.battle.ai.currentUnit.unit.aiStrategy = "AGGRO";
-            whendone();
+            if whendone then 
+                whendone();
+            end
         end
     else
-        int.execute = function(whendone) 
-            whendone();
+        int.execute = function(whendone)
+            if whendone then 
+                whendone();
+            end
         end;
     end
 

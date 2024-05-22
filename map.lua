@@ -37,7 +37,16 @@ Map = function(filename)
                 local si = sourceCell.interaction;
                 local int = Interaction(si);
                 map.interacts[si.id] = int;
-                cell.interaction = int;
+                cell.interactions.push(int);
+                print("cell " .. j .. "," .. i .. " is getting an interaction with id " .. si.id);
+            end
+            if sourceCell.interactions then
+                for k=1,#(sourceCell.interactions),1 do
+                    local si = sourceCell.interactions[k];
+                    local int = Interaction(si);
+                    map.interacts[si.id] = int;
+                    cell.interactions.push(int);
+                end
             end
 
             row.push(cell);
@@ -122,9 +131,11 @@ Map = function(filename)
                 elseif cell.hitOn then
                     love.graphics.draw(hitOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 end
-                if cell.interaction and cell.interaction.displaysOnMap then
-                    love.graphics.draw(interactOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
-                end
+                cell.interactions.forEach(function(x) 
+                    if x.displaysOnMap then
+                        love.graphics.draw(interactOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
+                    end
+                end);
             end
         end
     end

@@ -183,7 +183,11 @@ Battle = function(mapfile)
                 elseif cell.occupant == battle.moveUnit then 
                     --that's you- you're not moving, go straight to the action state.
                     battle.actionMenu = ActionMenu(battle.moveUnit);
-                    if cell.interaction then cell.interaction.addMenuOption(battle.actionMenu); end
+                    if #cell.interactions > 0 then 
+                        cell.interactions.forEach(function(x) 
+                            x.addMenuOption(battle.actionMenu); 
+                        end);
+                    end
                     battle.originalCoords = {y=battle.moveUnit.y,x=battle.moveUnit.x};
                     battle.resetPathing();
                     battle.state = "ACTION"; --TODO: ACTION
@@ -202,7 +206,11 @@ Battle = function(mapfile)
                     local mover = battle.moveUnit;
                     local whendone = function() 
                         battle.actionMenu = ActionMenu(mover);
-                        if cell.interaction then cell.interaction.addMenuOption(battle.actionMenu); end
+                        if #cell.interactions > 0 then 
+                            cell.interactions.forEach(function(x) 
+                                x.addMenuOption(battle.actionMenu); 
+                            end);
+                        end
                         battle.state = "ACTION";
                     end
                     battle.beginMovement(whendone);

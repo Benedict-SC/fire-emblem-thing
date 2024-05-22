@@ -157,11 +157,11 @@ AIManager = function()
             --get the objective tile somehow
             local objective = map.interacts[unit.aiObjectiveId];
             local navNodes = map.nodes(unit);
-            local targetNode = navNodes.oneDimensionDown().filter(function(x) return x.cell.interaction == objective end)[1];
+            local targetNode = navNodes.oneDimensionDown().filter(function(x) return x.cell.interactions.has(objective); end)[1];
             if targetNode then
                 print("we found target node " .. targetNode.x .. "," .. targetNode.y);
                 --check if your objective is in range. if so, just go to it and do it.
-                local targetInReachableNodes = ai.reachableNodes.filter(function(x) return x.cell.interaction == objective end)[1];
+                local targetInReachableNodes = ai.reachableNodes.filter(function(x) return x.cell.interactions.has(objective) end)[1];
                 if targetInReachableNodes then
                     local decision = Decision(targetInReachableNodes,nil,{performAction = unit.aiObjectiveId});
                     decision.createPath(ai.startNode);
