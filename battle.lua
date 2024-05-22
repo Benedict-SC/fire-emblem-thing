@@ -524,6 +524,8 @@ Battle = function(mapfile)
                 battle.clearOverlays();
                 battle.fightScreen.begin();
                 battle.state = "COMBAT";
+            elseif decision.options.performAction then
+                battle.map.interacts[decision.options.performAction].execute(function() battle.endUnitsTurn(unit); end);
             else
                 battle.endUnitsTurn(unit); --Wait
             end
@@ -635,7 +637,7 @@ Battle = function(mapfile)
         local scrollX = battle.camera.deadZoneW;
         local scrollY = battle.camera.deadZoneH;
         if (mx < scrollX) or (my < scrollY) or (mx > gamewidth - scrollX) or (my > gameheight - scrollY) then
-            battle.recenterOnSelector();
+            battle.recenterOnSelector(nil,0.9);
         end
     end
     battle.updateTargetingSelector = function()
@@ -761,19 +763,19 @@ Battle = function(mapfile)
         end
         
     end
-    battle.recenterOnSelector = function(whendone,instant)
-        battle.recenterOn(battle.selectorPos.x,battle.selectorPos.y,whendone,instant);
+    battle.recenterOnSelector = function(whendone,duration)
+        battle.recenterOn(battle.selectorPos.x,battle.selectorPos.y,whendone,duration);
     end
-    battle.recenterOn = function(x,y,whendone,instant)
-        battle.camera.recenter(battle,x,y,whendone,instant);
+    battle.recenterOn = function(x,y,whendone,duration)
+        battle.camera.recenter(battle,x,y,whendone,duration);
     end
     battle.processZoomInput = function()
         if pressedThisFrame["zoomIn"] then
             battle.camera.zoom(1);
-            battle.recenterOnSelector(nil,true);
+            battle.recenterOnSelector(nil,0);
         elseif pressedThisFrame["zoomOut"] then
             battle.camera.zoom(-1);
-            battle.recenterOnSelector(nil,true);
+            battle.recenterOnSelector(nil,0);
         end
     end
     battle.input_detail = function(ignoreBounds)

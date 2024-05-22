@@ -45,6 +45,7 @@ Map = function(filename)
         map.cells.push(row);
     end
     map.props = arrayify(data.props);
+    map.propRegister = {};
     map.props.forEach(function(x) 
         x.imgFile = x.img;
         x.img = love.graphics.newImage(x.imgFile);
@@ -52,6 +53,9 @@ Map = function(filename)
         x.naturalHeight = x.img:getHeight();
         x.sx = x.w / x.naturalWidth;
         x.sy = x.h / x.naturalHeight;
+        if x.id then --in case something needs to get it for in-game graphics changes
+            map.propRegister[x.id] = x;
+        end;
     end);
 
     map.drawCanvas = love.graphics.newCanvas(#map.cells[1] * game.tileSize,#map.cells * game.tileSize);

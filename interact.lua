@@ -8,8 +8,19 @@ Interaction = function(sourceData)
     int.displaysInMenu = sourceData.displaysInMenu;
     int.triggersOnTurnEnd = sourceData.triggersOnTurnEnd;
 
-    --if sourceData.
-    int.execute = function() end;
+    if sourceData.sacks then
+        int.execute = function(whendone)
+            local propToSack = game.battle.map.propRegister[sourceData.sacks];
+            propToSack.img = love.graphics.newImage("assets/img/sackedcassle.png");
+            int.displaysOnMap = false;
+            game.battle.ai.currentUnit.unit.aiStrategy = "AGGRO";
+            whendone();
+        end
+    else
+        int.execute = function(whendone) 
+            whendone();
+        end;
+    end
 
     int.addMenuOption = function(actionmenu)
         if int.displaysInMenu then

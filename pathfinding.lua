@@ -83,7 +83,12 @@ Pathfinding.intersectionWithOtherNodes = function(nodes1D,otherNodes1D) --when m
         return otherCells.has(x.cell);
     end);
 end
-
+Pathfinding.correspondingNode = function(node,listToFindItIn)
+    for i=1,#listToFindItIn,1 do
+        if listToFindItIn[i].cell == node.cell then return listToFindItIn[i]; end
+    end
+    return nil;
+end
 
 Cell = function(code) --these are used to store map data and persist
     local cell = {};

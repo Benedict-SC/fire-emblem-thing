@@ -75,6 +75,16 @@ arrayify = function(bareArray)
 		end
 		return out;
 	end
+	bareArray.slice = function(start,ending)
+		start = start and start or 1;
+		ending = ending and ending or #bareArray;
+		if ending < start then return Array(); end
+		local sliced = Array();
+		for i=start,ending,1 do
+			sliced.push(bareArray[i]);
+		end
+		return sliced;
+	end
 	bareArray.firstWhere = function(filterFunction)
 		local filtered = bareArray.filter(filterFunction);
 		return filtered[1];
@@ -232,4 +242,3 @@ dump = function(o,depth) --https://stackoverflow.com/questions/9168058/how-to-du
 	   return tostring(o);
 	end
 end
- 

@@ -101,28 +101,30 @@ AIManager = function()
             return a.damage > b.damage; --TODO: consider crackback for smart units
         end);
     end
+    ai.sentryModeResult = function(possibleCombats,unit,map)
+        print(unit.name .. " has combats and is picking one");
+        local chosenCombat;
+        if (not unit.aiTactics) or unit.aiTactics == "RANDOM" then
+            chosenCombat = possibleCombats[math.random(#possibleCombats)];
+        else
+            local predictions = ai.getFightPredictions(unit,map,possibleCombats); --we don't really care about the return value- after running this function, the possibleCombats themselves have predictions attached.
+            --TODO: sort possible combats based on the predictions and pick the best one
+            local sortedPredictions = ai.rankPredictions(unit,predictions);
+            local bestTarget = sortedPredictions[1];
+            chosenCombat = possibleCombats.firstWhere(function(x) return x.prediction == bestTarget; end);
+        end
+        if not chosenCombat then return nil; end
+        local decision = Decision(chosenCombat.atk,chosenCombat.def,{attackingWith=chosenCombat.wep});
+        if chosenCombat.atk ~= ai.startNode then
+            decision.createPath(ai.startNode);
+        end
+        return decision;
+    end
     ai.getDecision = function(unit,map) 
         local possibleCombats = ai.getPossibleCombats(unit,map);
         print("possible combats for " .. unit.name .. " at " .. unit.x .. "," .. unit.y .. " with strategy " .. unit.aiStrategy .. ": " .. #possibleCombats);
         if (not unit.aiStrategy) or (unit.aiStrategy == "SENTRY") or ((unit.aiStrategy == "AGGRO") and (#possibleCombats > 0)) then
-            print(unit.name .. " has combats and is picking one");
-            local possibleCombats = ai.getPossibleCombats(unit,map);
-            local chosenCombat;
-            if (not unit.aiTactics) or unit.aiTactics == "RANDOM" then
-                chosenCombat = possibleCombats[math.random(#possibleCombats)];
-            else
-                local predictions = ai.getFightPredictions(unit,map,possibleCombats); --we don't really care about the return value- after running this function, the possibleCombats themselves have predictions attached.
-                --TODO: sort possible combats based on the predictions and pick the best one
-                local sortedPredictions = ai.rankPredictions(unit,predictions);
-                local bestTarget = sortedPredictions[1];
-                chosenCombat = possibleCombats.firstWhere(function(x) return x.prediction == bestTarget; end);
-            end
-            if not chosenCombat then return nil; end
-            local decision = Decision(chosenCombat.atk,chosenCombat.def,{attackingWith=chosenCombat.wep});
-            if chosenCombat.atk ~= ai.startNode then
-                decision.createPath(ai.startNode);
-            end
-            return decision;
+            return ai.sentryModeResult(possibleCombats,unit,map);
         elseif unit.aiStrategy == "AGGRO" --[[aggro and nothing is in range yet--]] then
             print(unit.name .. " has no combats but is AGGRO and must move");
             local predictions = ai.getFightPredictions(unit,map);
@@ -159,9 +161,44 @@ AIManager = function()
             if targetNode then
                 print("we found target node " .. targetNode.x .. "," .. targetNode.y);
                 --check if your objective is in range. if so, just go to it and do it.
-                --otherwise, pick the X closest reachable nodes to the target, and check if any of them coincide with your possibleCombats.
-                --if they do, pick a possible combat and go do that one. break out SENTRY logic so this can just call that.
+                local targetInReachableNodes = ai.reachableNodes.filter(function(x) return x.cell.interaction == objective end)[1];
+                if targetInReachableNodes then
+                    local decision = Decision(targetInReachableNodes,nil,{performAction = unit.aiObjectiveId});
+                    decision.createPath(ai.startNode);
+                    return decision;
+                else
+                --otherwise, get the X closest reachable nodes to the target... 
+                    local nodelist = Pathfinding.dijkstra(targetNode);
+                    local potentialTargets = Pathfinding.intersectionWithOtherNodes(nodelist,ai.reachableNodes);
+                    potentialTargets.sort(function(a,b) return a.costSoFar < b.costSoFar; end);
+                    local numberOfCandidates = math.ceil(#potentialTargets / 6.0); --X equals 6 maybe. one sixth of reachable tiles close to the objective. we can tweak this.
+                    potentialTargets = potentialTargets.slice(1,numberOfCandidates);
+                    local potentialMoves = Pathfinding.intersectionWithOtherNodes(ai.reachableNodes,potentialTargets);
+                    print("the following nodes are valid attacks of opportunity:");
+                    for i=1,#potentialMoves,1 do
+                        print("(" .. potentialMoves[i].x .. "," .. potentialMoves[i].y ..")");
+                    end
+                    --...and check if any of them coincide with your possibleCombats.
+                    possibleCombats = possibleCombats.filter(function(x) 
+                        return potentialMoves.has(x.atk);
+                    end);
+                    --if they do, pick a possible combat and go do that one. break out SENTRY logic so this can just call that.
+                    if #possibleCombats >= 1 then
+                        print("we've found some possible combats.");
+                        return ai.sentryModeResult(possibleCombats,unit,map);
+                    else --otherwise, just pick the closest node and go there.
+                        print("no combats available at those tiles.");
+                        local potentialTargets = Pathfinding.intersectionWithOtherNodes(nodelist,ai.reachableNodes);
+                        potentialTargets.sort(function(a,b) return a.costSoFar < b.costSoFar; end);
+                        local navNode = potentialTargets[1];
+                        local goNode = Pathfinding.correspondingNode(navNode,ai.reachableNodes);
+                        local decision = Decision(goNode,nil,{waiting=true});
+                        decision.createPath(ai.startNode);
+                        return decision;
+                    end
+                end
             else
+                print("objective somehow doesn't exist on the map");
                 return nil; --objective somehow doesn't exist
             end
         else
@@ -174,6 +211,7 @@ AIManager = function()
         for i=1,#ai.unitList,1 do
             local u = ai.unitList[i];
             if not u.turnTaken then
+                ai.currentUnit = u;
                 return u;
             end
         end
