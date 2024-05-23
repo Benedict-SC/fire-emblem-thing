@@ -4,7 +4,7 @@ Game = function()
     game.tileSize = 50;
     game.init = function()
         UnitData.loadArmyFromSaveFile("save1.json");
-        game.battle = Battle("custom/maps/por1.json");
+        game.battle = Battle("custom/maps/testmap.json");
         game.statspage = StatsPage();
         game.state = "BATTLE";
         --game.battle.changePhase();

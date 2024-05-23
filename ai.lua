@@ -150,6 +150,9 @@ AIManager = function()
             local realIntermediateTarget = ai.reachableNodes.firstWhere(function(x) return (x.x == intermediateTarget.x) and (x.y == intermediateTarget.y); end); --because that's a different set of nodes with different connections "back"
             --then create a path from your start node and go there
             print("intermediate target: " .. realIntermediateTarget.x .. "," .. realIntermediateTarget.y);
+            if realIntermediateTarget == ai.startNode then
+                return nil;
+            end
             local decision = Decision(realIntermediateTarget,nil,{waiting=true});
             decision.createPath(ai.startNode); --no need to check if the attack is already here- there's no attack, you're definitely moving if you're in this state;
             return decision;
