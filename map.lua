@@ -2,6 +2,7 @@
 require("terrain");
 moveOverlay = love.graphics.newImage("assets/img/rangeMove.png");
 hitOverlay = love.graphics.newImage("assets/img/rangeHit.png");
+healOverlay = love.graphics.newImage("assets/img/rangeHeal.png");
 interactOverlay = love.graphics.newImage("assets/img/interactTile.png");
 repositionOverlay = love.graphics.newImage("assets/img/startingPosition.png");
 errorImg = love.graphics.newImage("assets/img/qmark.png");
@@ -33,17 +34,11 @@ Map = function(filename)
             local cell = Cell(sourceCell.tile);
             cell.isStartingPosition = sourceCell.isStartingPosition;
             cell.walls = sourceCell.walls;
-            if sourceCell.interaction then
-                local si = sourceCell.interaction;
-                local int = Interaction(si);
-                map.interacts[si.id] = int;
-                cell.interactions.push(int);
-                print("cell " .. j .. "," .. i .. " is getting an interaction with id " .. si.id);
-            end
             if sourceCell.interactions then
                 for k=1,#(sourceCell.interactions),1 do
                     local si = sourceCell.interactions[k];
-                    local int = Interaction(si);
+                    print("cell " .. j .. "," .. i .. " is getting an interaction with id " .. si.id);
+                    local int = Interaction(si,j,i,cell);
                     map.interacts[si.id] = int;
                     cell.interactions.push(int);
                 end
@@ -130,6 +125,8 @@ Map = function(filename)
                     love.graphics.draw(moveOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 elseif cell.hitOn then
                     love.graphics.draw(hitOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
+                elseif cell.interactOn then
+                    love.graphics.draw(interactOverlay,(j-1)*game.tileSize,(i-1)*game.tileSize);
                 end
                 local drewObjective = false;
                 cell.interactions.forEach(function(x) 

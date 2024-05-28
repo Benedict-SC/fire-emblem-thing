@@ -2,7 +2,7 @@ require("pathfinding");
 MOVE_SPEED = 0.14;
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, TALK, REPOSITION, OVERVIEW, PREBATTLE, AI
+    battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, PICKTALK, TALK, REPOSITION, OVERVIEW, PREBATTLE, AI
     battle.map = Map(mapfile);
     battle.displayStuff = Array();
     battle.camera = BattleCam();
@@ -33,7 +33,7 @@ Battle = function(mapfile)
             end
         end
         battle.map.renderUnits();
-        if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" or battle.state == "REPOSITION" or battle.state == "OVERVIEW" then
+        if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" or battle.state == "REPOSITION" or battle.state == "OVERVIEW" or battle.state == "PICKTALK" then
             if (battle.selectorPos.x >= 1 and battle.selectorPos.y >= 1) then
                 love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize)
             end
@@ -57,6 +57,10 @@ Battle = function(mapfile)
             battle.fightScreen.render();
         end
         if battle.state == "TALK" then
+            battle.convo.render();
+        end
+        if battle.state == "COMBATTALK" then
+            battle.fightScreen.render();
             battle.convo.render();
         end
         if battle.state == "DISPLAY" then
@@ -268,10 +272,35 @@ Battle = function(mapfile)
                 battle.fightScreen.begin();
                 battle.state = "COMBAT";
             end
+        elseif (battle.state == "PICKTALK") then
+            battle.updateTargetingSelector();
+            local targetUnit = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
+            if battle.input_cancel() then
+                battle.clearOverlays();
+                battle.state = "ACTION";
+            end
+            if battle.input_select() then
+                battle.clearOverlays();
+                local convoId = "error"
+                local otherConvos = targetUnit.talks.filter(function(x) return x.name == battle.actionMenu.unit.name end);
+                if #otherConvos > 0 then
+                    convoId = otherConvos[1].convoFile;
+                elseif battle.actionMenu.unit.talks then
+                    local ownConvos = battle.actionMenu.unit.talks.filter(function(x) return x.name == targetUnit.name end);
+                    if #ownConvos > 0 then
+                        convoId = ownConvos[1].convoFile;
+                    end
+                end
+                battle.convo = Convo(convoId,nil,false);
+                battle.state = "TALK";
+                battle.convo.start();
+            end
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
             battle.fightScreen.update();
         elseif (battle.state == "TALK") then
+            battle.convo.update();
+        elseif (battle.state == "COMBATTALK") then
             battle.convo.update();
         end
     end
@@ -477,6 +506,7 @@ Battle = function(mapfile)
             for j=1,#battle.map.cells[1],1 do
                 battle.map.cells[i][j].moveOn = false;
                 battle.map.cells[i][j].hitOn = false;
+                battle.map.cells[i][j].interactOn = false;
             end
         end
     end

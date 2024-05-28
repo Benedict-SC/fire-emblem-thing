@@ -1,0 +1,24 @@
+{
+    "portraits":{
+        "protag":{
+            "versions":{
+                "default":"herotall"
+            },
+            "x":0,
+            "active":true
+        },
+        "archer":{
+            "versions":{
+                "default":"archtall"
+            },
+            "x":300,
+            "active":true
+        }
+    },
+    "lines":[
+        {"text":"hey dude what's up","light":"protag"},
+        {"text":"not much. i am on your team.","light":"archer"},
+        {"text":"ok that good","light":"protag"},
+        {"text":"yeah man.","light":"archer"}
+    ]
+}

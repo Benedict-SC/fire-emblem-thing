@@ -32,21 +32,6 @@ PickWeapon = function(unit)
                 cellsInRange.forEach(function(x) 
                     x.hitOn = true;
                 end);
-                --create the vertical and horizontal scroll lists
-                local vertsort = function(a,b)
-                    if a.y < b.y then return true;
-                    elseif b.y < a.y then return false;
-                    elseif a.x < b.x then return true;
-                    else --[[if b.x < a.x]] return false;
-                    end
-                end
-                local horizsort = function(a,b)
-                    if a.x > b.x then return false;
-                    elseif b.x > a.x then return true;
-                    elseif a.y > b.y then return false;
-                    else --[[if b.y > a.y]] return true;
-                    end
-                end
                 local units = cellsInRange.map(function(x) return x.occupant; end);
                 b.verticalTargetList = units.sorted(vertsort);
                 b.horizontalTargetList = units.sorted(horizsort);

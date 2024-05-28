@@ -1,0 +1,32 @@
+{
+    "portraits":{
+        "protag":{
+            "versions":{
+                "default":"heroport",
+                "angry":"heroport_mad"
+            },
+            "x":0,
+            "active":true
+        },
+        "archer":{
+            "versions":{
+                "default":"archerport"
+            },
+            "x":0,
+            "active":true
+        },
+        "special":{
+            "versions":{
+                "default":"special-portrait"
+            },
+            "x":0,
+            "active":true
+        }
+    },
+    "lines":[
+        {"text":"we are fighting now! raaar","light":"protag","ports":[{"port":"protag","version":"angry"}]},
+        {"text":"why must we fight........ i sad.....","light":"special","ports":[{"port":"special","version":"default"}]},
+        {"text":"hm maybe we shouldn't fight. uh-oh","light":"protag","ports":[{"port":"protag","version":"default"}]},
+        {"text":"try talking to me if we both survive!","light":"special"}
+    ]
+}

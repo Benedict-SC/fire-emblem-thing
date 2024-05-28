@@ -1,16 +1,21 @@
-Convo = function(convoFile)
+Convo = function(convoFile,whendone,small)
     local c = {};
     local jsonstring = love.filesystem.read("assets/json/convo/" .. convoFile .. ".json");
     c.data = json.decode(jsonstring);
     c.idIndices = {};
 	c.line = 1;
+    c.whendone = whendone;
 	for i=1,#c.data.lines,1 do
 		local line = c.data.lines[i];
 		if line.id then 
 			c.idIndices[line.id] = i;
 		end
 	end
-    c.box = TextBox();
+    if not small then
+        c.box = TextBox();
+    else
+        c.box = MidbattleTextBox();
+    end
     for id,port in pairs(c.data.portraits) do
         c.box.registerPortrait(id,port.versions,port.x,port.active,port.reversed);
     end
@@ -46,7 +51,11 @@ Convo = function(convoFile)
         c.box.state = "TRANSITION";
         c.box.highlightOne(nil);
         c.box.fall(function()
-            game.battle.endUnitsTurn(game.battle.actionMenu.unit);
+            if c.whendone then
+                c.whendone();
+            else
+                game.battle.endUnitsTurn(game.battle.actionMenu.unit);
+            end
         end);
     end
     c.render = function()

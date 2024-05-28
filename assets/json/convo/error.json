@@ -1,0 +1,14 @@
+{
+    "portraits":{
+        "protag":{
+            "versions":{
+                "default":"herotall"
+            },
+            "x":0,
+            "active":true
+        }
+    },
+    "lines":[
+        {"text":"whoops! you somehow talked to someone who didn't have any dialogue with you. how'd that happen?","light":"protag"}
+    ]
+}

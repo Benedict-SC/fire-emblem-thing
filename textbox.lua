@@ -5,7 +5,7 @@ TEXT_FASTSPEED = 2.5;
 TextBox = function()
     local tb = {};
     tb.state = "TRANSITION"; --WRITE, HOLD, SELECT
-    tb.calligrapher = TextDrawer({x=40,y=215,w=500,h=150},nil,120)
+    tb.calligrapher = TextDrawer({x=42,y=215,w=500,h=150})
     tb.box = MenuBox(textboxImg,17,19);
     tb.box.resize(gamewidth-50,gameheight-200);
     tb.box.y = gameheight + 1;
@@ -54,7 +54,6 @@ TextBox = function()
             for k,v in ipairs(tb.portraits) do
                 v.y = gameheight - v.img:getHeight();
             end
-            --TODO: actually transition to some functioning write state
             tb.state = "WRITE"; 
         end);
     end
@@ -100,6 +99,60 @@ TextBox = function()
     end
     return tb;
 end
+
+MidbattleTextBox = function()
+    local tb = TextBox();
+    tb.boxheight = 130;
+    tb.calligrapher = TextDrawer({x=125,y=13,w=466,h=93});
+    tb.box = MenuBox(textboxImg,17,19);
+    tb.box.resize(gamewidth-10,tb.boxheight);
+    tb.box.y = -tb.boxheight;
+
+    tb.litPortrait = nil;
+    tb.render = function()
+        love.graphics.setColor(1,1,1);
+        tb.box.draw(10,tb.box.y);
+        if tb.state ~= "TRANSITION" then
+            if tb.calligrapher.fstrings then
+                tb.calligrapher.draw();
+            end
+        end
+        if tb.litPortrait then
+            local clipQuad = love.graphics.newQuad(0,0,100,100,tb.litPortrait.img:getWidth(),tb.litPortrait.img:getHeight());
+            tb.litPortrait.render(20,20,clipQuad);
+        end
+    end
+    tb.rise = function(whendone)
+        async.doOverTime(0.2,function(percent) 
+            tb.box.y = -tb.boxheight + math.floor(percent * tb.boxheight);
+        end,function() 
+            whendone();
+            tb.box.y = 0;
+            tb.state = "WRITE"; 
+        end);
+    end
+    tb.fall = function(whendone)
+        tb.litPortrait = nil;
+        async.doOverTime(0.2,function(percent) 
+            tb.box.y = -math.floor(percent * tb.boxheight);
+        end,function() 
+            tb.box.y = -tb.boxheight
+            if whendone then whendone(); end
+        end);
+    end
+    tb.highlightOne = function(portId) 
+        for id,port in pairs(tb.portraits) do
+            if not tonumber(id) and type(port) == "table" then --skip the numeric keys
+                port.lit = false;
+                if id == portId then
+                    port.lit = true;
+                    tb.litPortrait = port;
+                end
+            end
+        end
+    end
+    return tb;
+end
 TextBoxPortrait = function(versions)
     local tbp = {};
     tbp.x = 0;
@@ -113,7 +166,7 @@ TextBoxPortrait = function(versions)
     end
     tbp.portCode = "default";
     tbp.img = tbp.versions[tbp.portCode];
-    tbp.render = function()
+    tbp.render = function(x,y,quad)
         if not tbp.active then
             return;
         end
@@ -123,7 +176,11 @@ TextBoxPortrait = function(versions)
         else
             love.graphics.setColor(0.6,0.6,0.6);
         end
-        love.graphics.draw(tbp.img,tbp.x,tbp.y);
+        if quad then
+            love.graphics.draw(tbp.img,quad,x and x or tbp.x,y and y or tbp.y);
+        else
+            love.graphics.draw(tbp.img,x and x or tbp.x,y and y or tbp.y);
+        end
     end
     return tbp;
 end

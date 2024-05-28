@@ -242,3 +242,18 @@ dump = function(o,depth) --https://stackoverflow.com/questions/9168058/how-to-du
 	   return tostring(o);
 	end
 end
+--functions for building vertical and horizontal scroll lists
+vertsort = function(a,b)
+	if a.y < b.y then return true;
+	elseif b.y < a.y then return false;
+	elseif a.x < b.x then return true;
+	else --[[if b.x < a.x]] return false;
+	end
+end
+horizsort = function(a,b)
+	if a.x > b.x then return false;
+	elseif b.x > a.x then return true;
+	elseif a.y > b.y then return false;
+	else --[[if b.y > a.y]] return true;
+	end
+end

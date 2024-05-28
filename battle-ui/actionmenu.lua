@@ -47,21 +47,47 @@ ActionMenu = function(unit)
         am.options.push(dbgai);
     end
     --TALK
-    local talkTargets = adjUnits.filter(function(x) 
-        if not (am.unit.talks) then
+    am.talkTargets = adjUnits.filter(function(x) 
+        if (not am.unit.talks) and (not x.talks) then
             return false;
         end
-        local justNames = am.unit.talks.map(function(y) 
-            return y.name;
-        end);
-        return justNames.has(x.name);
+        local selfHasConvo = false;
+        local otherHasConvo = false;
+        --check self for convos
+        if am.unit.talks then
+            local justNames = am.unit.talks.map(function(y) 
+                return y.name;
+            end);
+            selfHasConvo = justNames.has(x.name);
+        end
+        --check target for convos
+        if x.talks then
+            local justNames = x.talks.map(function(y) 
+                return y.name;
+            end);
+            otherHasConvo = justNames.has(am.unit.name);
+        end
+        return selfHasConvo or otherHasConvo;
     end);
-    if #talkTargets >= 1 then
+    if #am.talkTargets >= 1 then
         local talkOption = {name="Talk"};
         talkOption.onPick = function()
-            game.battle.convo = Convo("recruitTest"); --TODO: fix convo data structure and actually retrieve it, then make a function in battle that does this
-            game.battle.state = "TALK";
-            game.battle.convo.start();
+            local b = game.battle;
+            b.clearOverlays();
+            am.talkTargets.forEach(function(x) 
+                local cell = b.map.cellContainingUnit(x);
+                cell.interactOn = true;
+            end);
+            b.verticalTargetList = am.talkTargets.sorted(vertsort);
+            b.horizontalTargetList = am.talkTargets.sorted(horizsort);
+            b.verticalTargetIndex = 1;
+            b.horizontalTargetIndex = b.horizontalTargetList.indexOf(b.verticalTargetList[1]);
+            --pick a random unit to start on and update the cursor
+            local randomUnit = b.verticalTargetList[1];
+            b.selectorPos.x = randomUnit.x;
+            b.selectorPos.y = randomUnit.y;
+            
+            game.battle.state = "PICKTALK";
         end
         am.options.push(talkOption);
     end

@@ -27,7 +27,8 @@ ActiveUnit = function(unitdata)
     unit.level = unitdata.level or 1;
     unit.exp = 0;
 
-    unit.talks = arrayify(unitdata.talks);
+    unit.talks = unitdata.talks and arrayify(unitdata.talks) or nil;
+    unit.battleTalks = unitdata.battleTalks and arrayify(unitdata.battleTalks) or nil;
 
     unit.doesCanto = function()
         return unit.class.mounted; --TODO: check if they have a canto skill or item or something

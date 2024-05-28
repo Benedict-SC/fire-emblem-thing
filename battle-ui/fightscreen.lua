@@ -17,6 +17,23 @@ FightScreen = function(fight)
         fight.def.anim = Animation(fight.def.animFilename);
     end
     fs.enemyTookDamage = false;
+    if fight.agg.battleTalks then
+        for i=1,#fight.agg.battleTalks,1 do
+            local bt = fight.agg.battleTalks[i];
+            if bt.name == fight.def.name then
+                fs.startConvo = Convo(bt.convoFile,function() fs.resumeAfterStartConvo(); end,true);
+                break;
+            end
+        end
+    elseif fight.def.battleTalks then
+        for i=1,#fight.def.battleTalks,1 do
+            local bt = fight.def.battleTalks[i];
+            if bt.name == fight.agg.name then
+                fs.startConvo = Convo(bt.convoFile,function() fs.resumeAfterStartConvo(); end,true);
+                break;
+            end
+        end
+    end
 
     fs.render = function()
         love.graphics.pushCanvas(fs.canvas);
@@ -137,11 +154,23 @@ FightScreen = function(fight)
             end,
             function() 
                 fs.spinprog = 1;
-                fs.state = "WINDUP";
-                fs.turnIndex = 1;
-                fs.initializeAttack();
+                if fs.startConvo then
+                    game.battle.convo = fs.startConvo;
+                    game.battle.state = "COMBATTALK";
+                    game.battle.convo.start();
+                else
+                    fs.state = "WINDUP";
+                    fs.turnIndex = 1;
+                    fs.initializeAttack();
+                end
             end
         );
+    end
+    fs.resumeAfterStartConvo = function()
+        game.battle.state = "COMBAT";
+        fs.state = "WINDUP";
+        fs.turnIndex = 1;
+        fs.initializeAttack();
     end
     fs.initializeAttack = function()
         fs.goer = fs.fight.turns[fs.turnIndex];
