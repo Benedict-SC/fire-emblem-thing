@@ -161,8 +161,8 @@ TextBoxPortrait = function(versions)
     tbp.active = false;
     tbp.lit = false;
     tbp.versions = {};
-    for id,fileid in pairs(versions) do
-        tbp.versions[id] = love.graphics.newImage("assets/img/" .. fileid .. ".png");
+    for id,filepath in pairs(versions) do
+        tbp.versions[id] = love.graphics.newImage(filepath .. ".png");
     end
     tbp.portCode = "default";
     tbp.img = tbp.versions[tbp.portCode];

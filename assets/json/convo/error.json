@@ -2,7 +2,7 @@
     "portraits":{
         "protag":{
             "versions":{
-                "default":"herotall"
+                "default":"assets/img/herotall"
             },
             "x":0,
             "active":true

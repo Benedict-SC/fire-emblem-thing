@@ -2,22 +2,22 @@
     "portraits":{
         "protag":{
             "versions":{
-                "default":"herotall",
-                "angry":"herotall_mad"
+                "default":"assets/img/herotall",
+                "angry":"assets/img/herotall_mad"
             },
             "x":0,
             "active":true
         },
         "archer":{
             "versions":{
-                "default":"archtall"
+                "default":"assets/img/archtall"
             },
             "x":300,
             "active":false
         },
         "special":{
             "versions":{
-                "default":"specialtall"
+                "default":"assets/img/specialtall"
             },
             "x":350,
             "active":true
