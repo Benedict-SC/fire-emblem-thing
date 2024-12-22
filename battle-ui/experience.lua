@@ -1,7 +1,9 @@
 xpScreenBg = love.graphics.newImage("assets/img/xpbg.png");
+xpScreenHeaderFont = Fonts.getFont("arial-b", 18);
 xpScreenFont = Fonts.getFont("arial", 17);
+levelScreenBg = love.graphics.newImage("assets/img/levelupbg.png");
 XPScreen = function(unit,amount,callback)
-    xs = {};
+    local xs = {};
     xs.unit = unit;
     xs.gain = amount;
     xs.callback = callback;
@@ -37,21 +39,21 @@ XPScreen = function(unit,amount,callback)
             if xs.leveled then
                 xs.levelUp();
             else
-                xs.fadeOut();
+                xs.fadeOut(xs.callback);
             end
         end);
     end
     xs.levelUp = function()
-        --TODO: level up ui
-        xs.fadeOut();
+        xs.levelScreen = LevelUpScreen(xs.unit,xs.callback,xs.canvas);
+        xs.fadeOut(xs.levelScreen.fadeIn);
     end
-    xs.fadeOut = function()
+    xs.fadeOut = function(callback)
         async.wait(0.8,function() 
             async.doOverTime(0.3,function(percent)
                 xs.fade = 1-percent;
             end,function() 
                 xs.fade = 0;
-                xs.callback();
+                callback();
             end);
         end);
     end
@@ -64,23 +66,90 @@ XPScreen = function(unit,amount,callback)
 
         --begin the render
         --bg and fill
-        local anchor = {x=gamewidth/2 - 118,y=gameheight/2-47};
-        love.graphics.draw(xpScreenBg,anchor.x,anchor.y);
-        love.graphics.setColor(1,0.88,0.37,1);
-        love.graphics.rectangle("fill",anchor.x+54,anchor.y+41,134 * (xs.displayExp / 100),12);
-        --text
-        love.graphics.setFont(xpScreenFont);
-        love.graphics.setColor(0.83,0.94,1,1);
-        love.graphics.print(unit.class.name,anchor.x + 53,anchor.y + 13);
-        love.graphics.print("Level " .. (xs.leveled and (unit.level + 1) or unit.level),anchor.x + 132,anchor.y + 13);
-        if xs.leveled then
-            love.graphics.print("+1",anchor.x + 172,anchor.y + 1);
+        if xs.fade ~= 0 then
+            local anchor = {x=gamewidth/2 - 118,y=gameheight/2-47};
+            love.graphics.draw(xpScreenBg,anchor.x,anchor.y);
+            love.graphics.setColor(1,0.88,0.37,1);
+            love.graphics.rectangle("fill",anchor.x+54,anchor.y+41,134 * (xs.displayExp / 100),12);
+            --text
+            love.graphics.setFont(xpScreenFont);
+            love.graphics.setColor(0.83,0.94,1,1);
+            love.graphics.print(xs.unit.class.name,anchor.x + 53,anchor.y + 13);
+            love.graphics.print("Level " .. (xs.leveled and (xs.unit.level + 1) or xs.unit.level),anchor.x + 132,anchor.y + 13);
+            if xs.leveled then
+                love.graphics.print("+1",anchor.x + 172,anchor.y + 1);
+            end
+
+            --now draw all that to the previous context
+            love.graphics.popCanvas();
+            love.graphics.setColor(1,1,1,xs.fade);
+            love.graphics.draw(xs.canvas,0,0);
+            love.graphics.setColor(1,1,1,1);
+        elseif xs.levelScreen then
+            xs.levelScreen.render();
+            love.graphics.popCanvas();
+            love.graphics.setColor(1,1,1,xs.levelScreen.fade);
+            love.graphics.draw(xs.canvas,0,0);
+            love.graphics.setColor(1,1,1,1);
+        else
+            love.graphics.popCanvas();
+            love.graphics.setColor(1,1,1,1);
         end
-        --now draw all that to the previous context
-        love.graphics.popCanvas();
-        love.graphics.setColor(1,1,1,xs.fade);
-        love.graphics.draw(xs.canvas,0,0);
-        love.graphics.setColor(1,1,1,1);
+
     end
     return xs;
+end
+LevelUpScreen = function(unit,callback, canvas)
+    local lus = {};
+    lus.canvas = canvas;
+    lus.callback = callback;
+    lus.unit = unit;
+    lus.fade = 0;
+    --animation control functions
+    lus.fadeIn = function()
+        async.doOverTime(0.3,function(percent)
+            lus.fade = percent;
+        end,function() 
+            lus.fade = 1;
+            lus.levelUp();
+        end);
+    end
+    lus.levelUp = function()
+        --TODO: level up ui
+        async.wait(6.3,function() 
+            lus.fadeOut(lus.callback);
+        end);
+    end
+    lus.fadeOut = function(callback)
+        async.wait(0.8,function() 
+            async.doOverTime(0.3,function(percent)
+                lus.fade = 1-percent;
+            end,function() 
+                lus.fade = 0;
+                callback();
+            end);
+        end);
+    end
+    --draw
+    lus.render = function()
+        local anchor = {x=gamewidth/2 - 158,y=gameheight/2-57};
+        love.graphics.draw(levelScreenBg,anchor.x,anchor.y);
+        love.graphics.setFont(xpScreenHeaderFont);
+        love.graphics.setColor(0.83,0.94,1,1);
+        love.graphics.print(lus.unit.name,anchor.x + 10,anchor.y + 9);
+        love.graphics.print("HP",anchor.x+42,anchor.y +39);
+        love.graphics.print("Str",anchor.x+42,anchor.y +64);
+        love.graphics.print("Skl",anchor.x+42,anchor.y +89);
+        love.graphics.print("Spd",anchor.x+42,anchor.y +114);
+        love.graphics.print("Luk",anchor.x+162,anchor.y +39);
+        love.graphics.print("Def",anchor.x+162,anchor.y +64);
+        love.graphics.print("Res",anchor.x+162,anchor.y +89);
+        love.graphics.print("Mov",anchor.x+162,anchor.y +114);
+        love.graphics.setFont(xpScreenFont);
+        love.graphics.print(lus.unit.class.name,anchor.x + 143,anchor.y + 10);
+        love.graphics.print("Lv",anchor.x + 220,anchor.y + 10);
+        love.graphics.print(lus.unit.level,anchor.x + 236,anchor.y + 10);
+        
+    end
+    return lus;
 end
