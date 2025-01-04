@@ -106,14 +106,14 @@ LevelUpScreen = function(unit,callback, canvas)
     lus.unit = unit;
     lus.fade = 0;
     lus.is = { --is == initialStats
-        maxhp = {val=unit.maxhp,changed=false,amt=0},
-        str = {val=unit.str,changed=false,amt=0},
-        skl = {val=unit.skl,changed=false,amt=0},
-        spd = {val=unit.spd,changed=false,amt=0},
-        luk = {val=unit.luk,changed=false,amt=0},
-        def = {val=unit.def,changed=false,amt=0},
-        res = {val=unit.res,changed=false,amt=0},
-        mov = {val=unit.mov,changed=false,amt=0}
+        maxhp = {val=unit.maxhp,changed=false,amt=0,showProg=0},
+        str = {val=unit.str,changed=false,amt=0,showProg=0},
+        skl = {val=unit.skl,changed=false,amt=0,showProg=0},
+        spd = {val=unit.spd,changed=false,amt=0,showProg=0},
+        luk = {val=unit.luk,changed=false,amt=0,showProg=0},
+        def = {val=unit.def,changed=false,amt=0,showProg=0},
+        res = {val=unit.res,changed=false,amt=0,showProg=0},
+        mov = {val=unit.mov,changed=false,amt=0,showProg=0}
     };
     --animation control functions
     lus.fadeIn = function()
@@ -158,11 +158,18 @@ LevelUpScreen = function(unit,callback, canvas)
                 local i = #ups;
                 while i > 0 do 
                     local statRef = lus.is[ups[i].stat];
+                    statRef.amt = ups[i].amt;
                     local lastOne = lastFunction;
                     local thisone;
                     if not lastFunction then
                         thisone = function()
                             statRef.changed = true;
+                            async.doOverTime(0.2,function(percent) 
+                                statRef.showProg = percent;
+                            end,function() 
+                                statRef.showProg = 1;
+                            end);
+                            sound.play("ding");
                             async.wait(0.8,function()
                                 lus.fadeOut(lus.callback);
                             end)
@@ -170,6 +177,12 @@ LevelUpScreen = function(unit,callback, canvas)
                     else
                         thisone = function()
                             statRef.changed = true;
+                            async.doOverTime(0.2,function(percent) 
+                                statRef.showProg = percent;
+                            end,function()
+                                statRef.showProg = 1;
+                            end);
+                            sound.play("ding");
                             async.wait(0.2,lastOne);
                         end
                     end
@@ -194,31 +207,47 @@ LevelUpScreen = function(unit,callback, canvas)
     end
     --draw
     lus.render = function()
+        local off2 = 120; --column 2 x offset
+        local slxo = 42; --stat label x offset
+        local svxo = 112; --stat value x offset
+        local suxo = 132; --stat-up value x offset
+        local sbyo = 39; --stat body y offset
+        local voff = 25; --vertical spacing on stats
+
         local anchor = {x=gamewidth/2 - 158,y=gameheight/2-57};
         love.graphics.draw(levelScreenBg,anchor.x,anchor.y);
         love.graphics.setFont(xpScreenHeaderFont);
         love.graphics.setColor(0.83,0.94,1,1);
         love.graphics.print(lus.unit.name,anchor.x + 10,anchor.y + 9);
-        love.graphics.print("HP",anchor.x+42,anchor.y +39);
-        love.graphics.print("Str",anchor.x+42,anchor.y +64);
-        love.graphics.print("Skl",anchor.x+42,anchor.y +89);
-        love.graphics.print("Spd",anchor.x+42,anchor.y +114);
-        love.graphics.print("Luk",anchor.x+162,anchor.y +39);
-        love.graphics.print("Def",anchor.x+162,anchor.y +64);
-        love.graphics.print("Res",anchor.x+162,anchor.y +89);
-        love.graphics.print("Mov",anchor.x+162,anchor.y +114);
+        love.graphics.print("HP",anchor.x + slxo,anchor.y + sbyo + (voff*0));
+        love.graphics.print("Str",anchor.x + slxo,anchor.y + sbyo + (voff*1));
+        love.graphics.print("Skl",anchor.x + slxo,anchor.y + sbyo + (voff*2));
+        love.graphics.print("Spd",anchor.x + slxo,anchor.y + sbyo + (voff*3));
+        love.graphics.print("Luk",anchor.x + slxo + off2,anchor.y + sbyo + (voff*0));
+        love.graphics.print("Def",anchor.x + slxo + off2,anchor.y + sbyo + (voff*1));
+        love.graphics.print("Res",anchor.x + slxo + off2,anchor.y + sbyo + (voff*2));
+        love.graphics.print("Mov",anchor.x + slxo + off2,anchor.y + sbyo + (voff*3));
         love.graphics.setFont(xpScreenFont);
-        love.graphics.print(not lus.is.maxhp.changed and lus.is.maxhp.val or lus.unit.maxhp,anchor.x+112,anchor.y +39);
-        love.graphics.print(not lus.is.str.changed and lus.is.str.val or lus.unit.str,anchor.x+112,anchor.y +64);
-        love.graphics.print(not lus.is.skl.changed and lus.is.skl.val or lus.unit.skl,anchor.x+112,anchor.y +89);
-        love.graphics.print(not lus.is.spd.changed and lus.is.spd.val or lus.unit.spd,anchor.x+112,anchor.y +114);
-        love.graphics.print(not lus.is.luk.changed and lus.is.luk.val or lus.unit.luk,anchor.x+232,anchor.y +39);
-        love.graphics.print(not lus.is.def.changed and lus.is.def.val or lus.unit.def,anchor.x+232,anchor.y +64);
-        love.graphics.print(not lus.is.res.changed and lus.is.res.val or lus.unit.res,anchor.x+232,anchor.y +89);
-        love.graphics.print(not lus.is.mov.changed and lus.is.mov.val or lus.unit.mov,anchor.x+232,anchor.y +114);
+        love.graphics.print(not lus.is.maxhp.changed and lus.is.maxhp.val or lus.unit.maxhp,anchor.x+svxo,anchor.y +sbyo+(voff*0));
+        love.graphics.print(not lus.is.str.changed and lus.is.str.val or lus.unit.str,anchor.x+svxo,anchor.y +sbyo+(voff*1));
+        love.graphics.print(not lus.is.skl.changed and lus.is.skl.val or lus.unit.skl,anchor.x+svxo,anchor.y +sbyo+(voff*2));
+        love.graphics.print(not lus.is.spd.changed and lus.is.spd.val or lus.unit.spd,anchor.x+svxo,anchor.y +sbyo+(voff*3));
+        love.graphics.print(not lus.is.luk.changed and lus.is.luk.val or lus.unit.luk,anchor.x+svxo+off2,anchor.y +sbyo+(voff*0));
+        love.graphics.print(not lus.is.def.changed and lus.is.def.val or lus.unit.def,anchor.x+svxo+off2,anchor.y +sbyo+(voff*1));
+        love.graphics.print(not lus.is.res.changed and lus.is.res.val or lus.unit.res,anchor.x+svxo+off2,anchor.y +sbyo+(voff*2));
+        love.graphics.print(not lus.is.mov.changed and lus.is.mov.val or lus.unit.mov,anchor.x+svxo+off2,anchor.y +sbyo+(voff*3));
         love.graphics.print(lus.unit.class.name,anchor.x + 143,anchor.y + 10);
         love.graphics.print("Lv",anchor.x + 220,anchor.y + 10);
         love.graphics.print(lus.unit.level,anchor.x + 236,anchor.y + 10);
+        local statkeys = {"maxhp","str","skl","spd","luk","def","res","mov"};
+        for i=1,#statkeys,1 do
+            local col2 = i > 4;
+            local yorder = math.fmod(i-1,4);
+            local prog = lus.is[statkeys[i]].showProg;
+            local bounce = ((-4*(prog-0.5)*(prog-0.5))+1) * 10;
+            love.graphics.setColor(1,0.83,0,prog);
+            love.graphics.print("+" .. lus.is[statkeys[i]].amt,anchor.x + suxo + (col2 and off2 or 0),anchor.y + sbyo + (yorder * voff) - bounce);
+        end
         
     end
     return lus;

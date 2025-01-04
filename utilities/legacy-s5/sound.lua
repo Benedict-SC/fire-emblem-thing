@@ -210,6 +210,7 @@ sound.beeps = {};
 sound.makeAndBank("playerphase","assets/audio/playerphase.ogg",1,false,"static");
 sound.makeAndBank("enemyphase","assets/audio/enemyphase.ogg",1,false,"static");
 sound.makeAndBank("otherphase","assets/audio/otherphase.ogg",1,false,"static");
+sound.makeAndBank("ding","assets/audio/ding.ogg",1,false,"static");
 
 sound.beep = function(sID)
     if not sID then
