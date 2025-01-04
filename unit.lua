@@ -1,4 +1,4 @@
-ActiveUnit = function(unitdata)
+Unit = function(unitdata)
     local unit = {};
     unit.img = nil;
     unit.port = nil;
@@ -25,6 +25,13 @@ ActiveUnit = function(unitdata)
     unit.mov = unitdata.mov or 1;
     unit.con = unitdata.con or 10;
     unit.level = unitdata.level or 1;
+    unit.maxhpGrowth = unitdata.mhpg or 50;
+    unit.strGrowth = unitdata.strg or 30;
+    unit.sklGrowth = unitdata.sklg or 40;
+    unit.lukGrowth = unitdata.lukg or 20;
+    unit.spdGrowth = unitdata.spdg or 30;
+    unit.defGrowth = unitdata.defg or 30;
+    unit.resGrowth = unitdata.resg or 20;
     unit.exp = 0;
 
     unit.talks = unitdata.talks and arrayify(unitdata.talks) or nil;
@@ -113,6 +120,29 @@ ActiveUnit = function(unitdata)
     --units will be drawn on their appropriate grid cell by the map render, plus an offset for continuous movement animations
     unit.xoff = 0; 
     unit.yoff = 0;
+    unit.levelUp = function()
+        local maxHpUp = unit.randomGrowthAmount("maxhpGrowth");
+        unit.maxhp = unit.maxhp + maxHpUp;
+        local strUp = unit.randomGrowthAmount("strGrowth");
+        unit.str = unit.str + strUp;
+        local sklUp = unit.randomGrowthAmount("sklGrowth");
+        unit.skl = unit.skl + sklUp;
+        local spdUp = unit.randomGrowthAmount("spdGrowth");
+        unit.spd = unit.spd + spdUp;
+        local lukUp = unit.randomGrowthAmount("lukGrowth");
+        unit.luk = unit.luk + lukUp;
+        local defUp = unit.randomGrowthAmount("defGrowth");
+        unit.def = unit.def + defUp;
+        local resUp = unit.randomGrowthAmount("resGrowth");
+        unit.res = unit.res + resUp;
+        return {maxhp=maxHpUp,str=strUp,skl=sklUp,spd=spdUp,luk=lukUp,def=defUp,res=resUp,mov=--[[movUp--]]0}; --if this is received, the handler should handle what happens if a unit with no template levels up
+    end
+    unit.randomGrowthAmount = function(growthname)
+        local rand = random099();
+        rand = rand + unit[growthname];
+        DEBUG_TEXT = DEBUG_TEXT .. math.floor(rand) .. "/";
+        return math.floor(rand / 100);
+    end
 
     return unit;
 end

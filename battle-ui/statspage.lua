@@ -3,7 +3,7 @@ StatsPage = function()
     sp.bg = love.graphics.newImage("assets/img/menubg.png");
     sp.badBg = love.graphics.newImage("assets/img/menubg-enemy.png");
     sp.alignment = 1; -- 1=ally, 2=enemy, 3=other
-    sp.unit = ActiveUnit({type="soldier"});
+    sp.unit = Unit({type="soldier"});
     sp.unitList = {sp.unit};
     sp.statfont = Fonts.getFont("arial", 20);
     sp.render = function()

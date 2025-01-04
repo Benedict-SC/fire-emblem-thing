@@ -1,3 +1,4 @@
+math.randomseed(os.time());
 Array = function(...)
 	local arr = {};
 	local argnum = select("#",...);

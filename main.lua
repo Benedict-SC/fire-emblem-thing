@@ -41,7 +41,7 @@ require("weapons");
 require("items");
 require("map");
 require("unitclass");
-require("activeunit");
+require("unit");
 require("movefx");
 require("menubox");
 require("textbox");

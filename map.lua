@@ -74,7 +74,7 @@ Map = function(filename)
     UnitData.loadArmyDataToMapData(data.units);
     for i=1,#(data.units),1 do
         local unitdata = data.units[i]
-        local unit = ActiveUnit(unitdata);
+        local unit = Unit(unitdata);
         if(unitdata.classPreset) then
             unit.class = classLibrary[unitdata.classPreset];
         end

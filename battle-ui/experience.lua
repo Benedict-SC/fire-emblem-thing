@@ -105,6 +105,16 @@ LevelUpScreen = function(unit,callback, canvas)
     lus.callback = callback;
     lus.unit = unit;
     lus.fade = 0;
+    lus.is = { --is == initialStats
+        maxhp = {val=unit.maxhp,changed=false,amt=0},
+        str = {val=unit.str,changed=false,amt=0},
+        skl = {val=unit.skl,changed=false,amt=0},
+        spd = {val=unit.spd,changed=false,amt=0},
+        luk = {val=unit.luk,changed=false,amt=0},
+        def = {val=unit.def,changed=false,amt=0},
+        res = {val=unit.res,changed=false,amt=0},
+        mov = {val=unit.mov,changed=false,amt=0}
+    };
     --animation control functions
     lus.fadeIn = function()
         async.doOverTime(0.3,function(percent)
@@ -116,8 +126,60 @@ LevelUpScreen = function(unit,callback, canvas)
     end
     lus.levelUp = function()
         --TODO: level up ui
-        async.wait(6.3,function() 
-            lus.fadeOut(lus.callback);
+        async.wait(0.5,function() 
+            local results = lus.unit.levelUp();
+            if results then
+                local ups = Array();
+                if results.maxhp > 0 then
+                    ups.push({stat="maxhp",amt=results.maxhp});
+                end
+                if results.str > 0 then
+                    ups.push({stat="str",amt=results.str});
+                end
+                if results.skl > 0 then
+                    ups.push({stat="skl",amt=results.skl});
+                end
+                if results.spd > 0 then
+                    ups.push({stat="spd",amt=results.spd});
+                end
+                if results.luk > 0 then
+                    ups.push({stat="luk",amt=results.luk});
+                end
+                if results.def > 0 then
+                    ups.push({stat="def",amt=results.def});
+                end
+                if results.res > 0 then
+                    ups.push({stat="res",amt=results.res});
+                end
+                if results.mov > 0 then
+                    ups.push({stat="mov",amt=results.mov});
+                end
+                local lastFunction = nil;
+                local i = #ups;
+                while i > 0 do 
+                    local statRef = lus.is[ups[i].stat];
+                    local lastOne = lastFunction;
+                    local thisone;
+                    if not lastFunction then
+                        thisone = function()
+                            statRef.changed = true;
+                            async.wait(0.8,function()
+                                lus.fadeOut(lus.callback);
+                            end)
+                        end
+                    else
+                        thisone = function()
+                            statRef.changed = true;
+                            async.wait(0.2,lastOne);
+                        end
+                    end
+                    lastFunction = thisone;
+                    i = i - 1;
+                end
+                lastFunction();
+            else
+                lus.fadeOut(lus.callback);
+            end
         end);
     end
     lus.fadeOut = function(callback)
@@ -146,6 +208,14 @@ LevelUpScreen = function(unit,callback, canvas)
         love.graphics.print("Res",anchor.x+162,anchor.y +89);
         love.graphics.print("Mov",anchor.x+162,anchor.y +114);
         love.graphics.setFont(xpScreenFont);
+        love.graphics.print(not lus.is.maxhp.changed and lus.is.maxhp.val or lus.unit.maxhp,anchor.x+112,anchor.y +39);
+        love.graphics.print(not lus.is.str.changed and lus.is.str.val or lus.unit.str,anchor.x+112,anchor.y +64);
+        love.graphics.print(not lus.is.skl.changed and lus.is.skl.val or lus.unit.skl,anchor.x+112,anchor.y +89);
+        love.graphics.print(not lus.is.spd.changed and lus.is.spd.val or lus.unit.spd,anchor.x+112,anchor.y +114);
+        love.graphics.print(not lus.is.luk.changed and lus.is.luk.val or lus.unit.luk,anchor.x+232,anchor.y +39);
+        love.graphics.print(not lus.is.def.changed and lus.is.def.val or lus.unit.def,anchor.x+232,anchor.y +64);
+        love.graphics.print(not lus.is.res.changed and lus.is.res.val or lus.unit.res,anchor.x+232,anchor.y +89);
+        love.graphics.print(not lus.is.mov.changed and lus.is.mov.val or lus.unit.mov,anchor.x+232,anchor.y +114);
         love.graphics.print(lus.unit.class.name,anchor.x + 143,anchor.y + 10);
         love.graphics.print("Lv",anchor.x + 220,anchor.y + 10);
         love.graphics.print(lus.unit.level,anchor.x + 236,anchor.y + 10);
