@@ -1,4 +1,5 @@
 require("battle-ui.pickweapon");
+require("battle-ui.pickitem");
 actionMenuImg = love.graphics.newImage("assets/img/sliceablemenu.png");
 actionMenuCursor = love.graphics.newImage("assets/img/actionmenu_cursor.png");
 actionMenuOptionHeight = 23;
@@ -92,6 +93,31 @@ ActionMenu = function(unit)
         am.options.push(talkOption);
     end
     --TRADE
+    am.tradeTargets = adjUnits.filter(function(x) 
+        return x.faction == am.unit.faction;
+    end);
+    if #am.tradeTargets >= 1 then
+        local tradeOption = {name="Trade"};
+        tradeOption.onPick = function()
+        local b = game.battle;
+            b.clearOverlays();
+            am.tradeTargets.forEach(function(x) 
+                local cell = b.map.cellContainingUnit(x);
+                cell.interactOn = true;
+            end);
+            b.verticalTargetList = am.tradeTargets.sorted(vertsort);
+            b.horizontalTargetList = am.tradeTargets.sorted(horizsort);
+            b.verticalTargetIndex = 1;
+            b.horizontalTargetIndex = b.horizontalTargetList.indexOf(b.verticalTargetList[1]);
+            --pick a random unit to start on and update the cursor
+            local randomUnit = b.verticalTargetList[1];
+            b.selectorPos.x = randomUnit.x;
+            b.selectorPos.y = randomUnit.y;
+            
+            game.battle.state = "PICKTRADE"; 
+        end
+        am.options.push(tradeOption);
+    end
     --SHOVE
     --RESCUE
     --STEAL
@@ -100,7 +126,8 @@ ActionMenu = function(unit)
         local itemOption = {name="Item"};
         itemOption.onPick = function()
             --open up the inventory screen and go to inventory state
-            game.battle.state = "MAINPHASE"; --TODO: inventory stuff
+            game.battle.pickItemMenu = PickItem(am.unit);
+            game.battle.state = "PICKITEM"; --TODO: inventory stuff
         end
         am.options.push(itemOption);
     end

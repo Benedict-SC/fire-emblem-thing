@@ -102,6 +102,12 @@ Unit = function(unitdata)
             i = i+1;
         end
     end
+    unit.itemHeal = function(amount,callback)
+        unit.hp = unit.hp + amount;
+        if unit.hp > unit.maxhp then unit.hp = unit.maxhp; end
+        --TODO: play a health-restoring animation here
+        callback();
+    end
     unit.loadSprites = function()
         if unit.mapSpriteFile then
             unit.img = love.graphics.newImage(unit.mapSpriteFile);

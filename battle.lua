@@ -2,7 +2,7 @@ require("pathfinding");
 MOVE_SPEED = 0.14;
 Battle = function(mapfile)
     local battle = {};
-    battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, PICKTALK, TALK, REPOSITION, OVERVIEW, PREBATTLE, AI
+    battle.state = "PREBATTLE"; --MAINPHASE, PATHING, MOVING, ACTION, PICKWEAPON, GLOBALMENU, COMBATPREVIEW, TARGET, COMBAT, DISPLAY, PICKTALK, TALK, PICKTRADE, TRADE, REPOSITION, OVERVIEW, PREBATTLE, AI
     battle.map = Map(mapfile);
     battle.displayStuff = Array();
     battle.camera = BattleCam();
@@ -33,7 +33,7 @@ Battle = function(mapfile)
             end
         end
         battle.map.renderUnits();
-        if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" or battle.state == "REPOSITION" or battle.state == "OVERVIEW" or battle.state == "PICKTALK" then
+        if battle.state == "MAINPHASE" or battle.state == "PATHING" or battle.state == "COMBATPREVIEW" or battle.state == "REPOSITION" or battle.state == "OVERVIEW" or battle.state == "PICKTALK" or battle.state == "PICKTRADE" then
             if (battle.selectorPos.x >= 1 and battle.selectorPos.y >= 1) then
                 love.graphics.draw(battle.selector,(battle.selectorPos.x - 1)*game.tileSize,(battle.selectorPos.y - 1)*game.tileSize)
             end
@@ -45,10 +45,14 @@ Battle = function(mapfile)
         end
         love.graphics.popCanvas();
         love.graphics.draw(battle.map.drawCanvas,-battle.camera.xoff,-battle.camera.yoff,0,battle.camera.factor,battle.camera.factor);
-        if battle.state == "ACTION" or battle.state == "PICKWEAPON" or battle.state == "GLOBALMENU" or battle.state == "PREBATTLE" then
-            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["GLOBALMENU"]=battle.globalMenu,["PREBATTLE"]=battle.preBattleMenu};
+        if battle.state == "ACTION" or battle.state == "PICKWEAPON" or battle.state == "PICKITEM" or battle.state == "GLOBALMENU" or battle.state == "PREBATTLE" then
+            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["PICKITEM"]=battle.pickItemMenu,["GLOBALMENU"]=battle.globalMenu,["PREBATTLE"]=battle.preBattleMenu};
             local menuToRender = menus[battle.state];
             menuToRender.render(battle.camera);
+        end
+        if battle.state == "ITEMOPTIONS" then
+            battle.pickItemMenu.render(battle.camera);
+            battle.itemOptionsMenu.render(battle.camera);
         end
         if battle.state == "COMBATPREVIEW" then
             battle.fight.renderPreview();
@@ -226,12 +230,14 @@ Battle = function(mapfile)
             end
         elseif (battle.state == "MOVING") then
             --skip and cancel inputs during the walk go here
-        elseif (battle.state == "ACTION") or (battle.state == "PICKWEAPON") or (battle.state == "GLOBALMENU") or (battle.state == "PREBATTLE") then
-            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["GLOBALMENU"]=battle.globalMenu,["PREBATTLE"]=battle.preBattleMenu};
+        elseif (battle.state == "ACTION") or (battle.state == "PICKWEAPON") or (battle.state == "PICKITEM") or (battle.state == "ITEMOPTIONS") or (battle.state == "GLOBALMENU") or (battle.state == "PREBATTLE") then
+            local menus = {["ACTION"]=battle.actionMenu,["PICKWEAPON"]=battle.pickWeaponMenu,["PICKITEM"]=battle.pickItemMenu,["ITEMOPTIONS"]=battle.itemOptionsMenu,["GLOBALMENU"]=battle.globalMenu,["PREBATTLE"]=battle.preBattleMenu};
             local menuToControl = menus[battle.state];
             if battle.input_cancel() then
-                if battle.state == "PICKWEAPON" then 
+                if battle.state == "PICKWEAPON" or battle.state == "PICKITEM" then 
                     battle.state = "ACTION"; 
+                elseif battle.state == "ITEMOPTIONS" then
+                    battle.state = "PICKITEM";
                 elseif battle.state == "ACTION" then
                     battle.map.moveUnitTo(battle.actionMenu.unit,
                                             battle.originalCoords.x,
@@ -294,6 +300,28 @@ Battle = function(mapfile)
                 battle.convo = Convo(convoId,nil,false);
                 battle.state = "TALK";
                 battle.convo.start();
+            end
+        elseif (battle.state == "PICKITEM") then
+            if battle.input_cancel() then
+                battle.clearOverlays();
+                battle.state = "ACTION";
+            end
+            if battle.input_select() then
+                battle.clearOverlays();
+                --TODO: implement item menu
+                battle.state = "ACTION";
+            end
+        elseif (battle.state == "PICKTRADE") then
+            battle.updateTargetingSelector();
+            local targetUnit = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
+            if battle.input_cancel() then
+                battle.clearOverlays();
+                battle.state = "ACTION";
+            end
+            if battle.input_select() then
+                battle.clearOverlays();
+                --TODO: implement trading
+                battle.state = "ACTION";
             end
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
