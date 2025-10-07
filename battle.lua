@@ -60,6 +60,9 @@ Battle = function(mapfile)
         if (battle.state == "COMBAT") then
             battle.fightScreen.render();
         end
+        if battle.state == "TRADE" then
+            battle.tradeMenu.render();
+        end
         if battle.state == "TALK" then
             battle.convo.render();
         end
@@ -239,10 +242,14 @@ Battle = function(mapfile)
                 elseif battle.state == "ITEMOPTIONS" then
                     battle.state = "PICKITEM";
                 elseif battle.state == "ACTION" then
-                    battle.map.moveUnitTo(battle.actionMenu.unit,
-                                            battle.originalCoords.x,
-                                            battle.originalCoords.y);
-                    battle.pathfind(battle.actionMenu.unit);
+                    if battle.irreversibleActionCommitted then
+                        --TODO: play negative sound effect or otherwise indicate you can't do that
+                    else
+                        battle.map.moveUnitTo(battle.actionMenu.unit,
+                                                battle.originalCoords.x,
+                                                battle.originalCoords.y);
+                        battle.pathfind(battle.actionMenu.unit);
+                    end
                 elseif battle.state == "GLOBALMENU" then
                     battle.state = "MAINPHASE";
                 end
@@ -301,16 +308,6 @@ Battle = function(mapfile)
                 battle.state = "TALK";
                 battle.convo.start();
             end
-        elseif (battle.state == "PICKITEM") then
-            if battle.input_cancel() then
-                battle.clearOverlays();
-                battle.state = "ACTION";
-            end
-            if battle.input_select() then
-                battle.clearOverlays();
-                --TODO: implement item menu
-                battle.state = "ACTION";
-            end
         elseif (battle.state == "PICKTRADE") then
             battle.updateTargetingSelector();
             local targetUnit = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x].occupant;
@@ -321,7 +318,29 @@ Battle = function(mapfile)
             if battle.input_select() then
                 battle.clearOverlays();
                 --TODO: implement trading
-                battle.state = "ACTION";
+                battle.tradeMenu = TradeMenu(battle.actionMenu.unit,targetUnit);
+                battle.state = "TRADE";
+            end
+        elseif (battle.state == "TRADE") then
+            if battle.input_cancel() then
+                battle.tradeMenu.backOut();
+            else
+                if controlMode == "MOUSE" then
+                    battle.tradeMenu.setCursorWithMouse(battle.camera);
+                    if battle.input_select(true) then
+                        battle.tradeMenu.executeCurrentOption();
+                    end
+                else
+                    if battle.input_select() then
+                        battle.tradeMenu.executeCurrentOption();
+                    elseif pressedThisFrame["up"] then
+                        battle.tradeMenu.moveCursor(-1);
+                    elseif pressedThisFrame["down"] then
+                        battle.tradeMenu.moveCursor(1);
+                    elseif pressedThisFrame["right"] or pressedThisFrame["left"] then
+                        battle.tradeMenu.switchSides();
+                    end
+                end
             end
         elseif (battle.state == "TARGET") then
         elseif (battle.state == "COMBAT") then
@@ -430,6 +449,7 @@ Battle = function(mapfile)
     end
     battle.endUnitsTurn = function(unit)
         unit.used = true;
+        battle.irreversibleActionCommitted = false;
         local factionName = battle.map.factionOrder[battle.activeFaction];
         if factionName == "PLAYER" then
             local unused = battle.map.playerUnits().filter(function(x) 

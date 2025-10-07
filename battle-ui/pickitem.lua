@@ -40,6 +40,14 @@ ItemOptionsMenu = function(unit,item,yoff)
     iom.item = item;
     iom.yoffset = yoff;
     iom.options = Array();
+    if iom.item.isWeapon then
+        --TODO: weapon proficiency check
+        local equipOpt = {name="Equip"};
+        equipOpt.onPick = function()
+            iom.unit.equipWeapon(iom.item);
+        end
+        iom.options.push(equipOpt);
+    end
     if iom.item.usable() then
         local useOpt = {name="Use"};
         useOpt.onPick = function()

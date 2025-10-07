@@ -6,7 +6,6 @@ pickWeaponOptionHeight = 23;
 pickWeaponFont = Fonts.getFont("arial", 17);
 PickWeapon = function(unit)
     local pw = {};
-    pw.img = actionMenuImg;
     pw.box = MenuBox(pickWeaponImg,10);
     pw.cursorPosition = 1; --0 is no draw
     pw.unit = unit;
