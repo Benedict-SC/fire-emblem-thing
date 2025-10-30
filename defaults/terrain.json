@@ -24,7 +24,7 @@
     },
     {
         "name":"Sand",
-        "imgPath":"assets/img/errorfloor.png",
+        "imgPath":"assets/img/sand.png",
         "costs":{
             "default":2,
             "FLYING":1,
@@ -33,7 +33,7 @@
     },
     {
         "name":"Wall",
-        "imgPath":"assets/img/errorfloor.png",
+        "imgPath":"assets/img/wall.png",
         "costs":{
             "default":999,
             "FLYING":1
@@ -41,7 +41,7 @@
     },
     {
         "name":"HighWall",
-        "imgPath":"assets/img/errorfloor.png",
+        "imgPath":"assets/img/wall.png",
         "costs":{
             "default":999
         }

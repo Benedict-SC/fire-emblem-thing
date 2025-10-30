@@ -187,7 +187,7 @@ Battle = function(mapfile)
             battle.processNodePath();
             if battle.input_select() then --we've clicked on a space to move to
                 local cell = battle.map.cells[battle.selectorPos.y][battle.selectorPos.x];
-                local node = battle.moveNodes[battle.selectorPos.y][battle.selectorPos.x];
+                local node = battle.moveNodes[battle.selectorPos.y - battle.map.bounds.y0][battle.selectorPos.x - battle.map.bounds.x0];
 
                 if (not node.hittable) and (not node.marked) then
                     --do nothing- out of range, invalid input
@@ -499,7 +499,7 @@ Battle = function(mapfile)
     end
     battle.processNodePath = function()
         if not battle.selectorInBounds() then return; end
-        local hoverNode = battle.moveNodes[battle.selectorPos.y][battle.selectorPos.x];
+        local hoverNode = battle.moveNodes[battle.selectorPos.y - battle.map.bounds.y0][battle.selectorPos.x - battle.map.bounds.x0];
         local hoverCell = battle.map.cellFromNode(hoverNode);
         if not (hoverNode.marked) then --the hovered node is out of range, so don't do anything
             return;
@@ -887,9 +887,7 @@ Battle = function(mapfile)
     end
     battle.selectorInBounds = function()
         local s = battle.selectorPos;
-        local maxX = #(battle.map.cells[1]);
-        local maxY = #(battle.map.cells);
-        return s.x > 0 and s.x <= maxX and s.y > 0 and s.y <= maxY;
+        return s.x > battle.map.bounds.x0 and s.x <= battle.map.bounds.x1 and s.y > battle.map.bounds.y0 and s.y <= battle.map.bounds.y1;
     end
     return battle;
 end

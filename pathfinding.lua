@@ -1,7 +1,7 @@
 Pathfinding = {};
 Pathfinding.displayRange = function(unit,battle) 
     local nodes = battle.map.nodes(unit); --get the navigation nodes
-    local startNode = nodes[unit.y][unit.x];
+    local startNode = nodes[unit.y - battle.map.bounds.y0][unit.x - battle.map.bounds.x0];
     local nodes1D = nodes.oneDimensionDown();
     local nodelist = Pathfinding.dijkstra(startNode,unit.mov); --populate the navigation nodes with costs and get the subset of nodes that are considered in-range
     for i=1,#nodelist,1 do --for all those nodes, turn on the valid-move-option overlay

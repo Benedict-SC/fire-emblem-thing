@@ -26,6 +26,10 @@ Map = function(filename)
     local jsonstring = love.filesystem.read(filename);
     local data = json.decode(jsonstring);
     map.factionOrder = data.factionOrder and arrayify(data.factionOrder) or arrayify({"PLAYER","ENEMY"});
+    map.bounds = data.bounds or {x0=0,y0=0,x1=#data.tiles[1],y1=#data.tiles};
+    map.cellInBounds = function(x,y)
+        return x > map.bounds.x0 and x <= map.bounds.x1 and y > map.bounds.y0 and y <= map.bounds.y1;
+    end
 
     for i=1,#(data.tiles),1 do
         local row = Array();
@@ -34,6 +38,7 @@ Map = function(filename)
             local cell = Cell(sourceCell.tile);
             cell.isStartingPosition = sourceCell.isStartingPosition;
             cell.walls = sourceCell.walls;
+            cell.inBounds = map.cellInBounds(j,i);
             if sourceCell.interactions then
                 for k=1,#(sourceCell.interactions),1 do
                     local si = sourceCell.interactions[k];
@@ -110,6 +115,24 @@ Map = function(filename)
                 love.graphics.draw(terrainImages[tilecode],(j-1)*game.tileSize,(i-1)*game.tileSize);
             end
         end
+        map.renderGrid();
+    end
+    map.renderGrid = function()
+        love.graphics.setLineWidth(1);
+        love.graphics.setColor(0.8,0.8,0.8,0.5);
+        for y=1,#(map.cells),1 do
+            for x=1,#(map.cells[1]),1 do
+                local drawrightborder = (y > map.bounds.y0) and (y <= map.bounds.y1) and (x >= map.bounds.x0) and (x <= map.bounds.x1);
+                local drawbottomborder = (x > map.bounds.x0) and (x <= map.bounds.x1) and (y >= map.bounds.y0) and (y <= map.bounds.y1);
+                if drawbottomborder then
+                    love.graphics.line((x-1)*game.tileSize,y*game.tileSize,x*game.tileSize,y*game.tileSize);
+                end
+                if drawrightborder then
+                    love.graphics.line(x*game.tileSize,(y-1)*game.tileSize,x*game.tileSize,y*game.tileSize);
+                end
+            end
+        end
+        love.graphics.setColor(1,1,1,1);
     end
     map.renderPaintovers = function()
         for i=1,#map.props,1 do
@@ -175,16 +198,23 @@ Map = function(filename)
                 return 999;
             end
         end
+        if not cell.inBounds then
+            return 999;
+        end
         return emptySpaceCost;
     end
     map.nodes = function(unit)
         local nodes = Array();
-        for i=1,#(map.cells),1 do
+        nodes.y0 = map.bounds.y0;
+        nodes.x0 = map.bounds.x0;
+        for i=1+nodes.y0,map.bounds.y1,1 do
             nodes.push(Array());
             for j=1,#(map.cells[1]),1 do
                 local tile = map.cells[i][j];
-                local node = Node(j,i,tile);
-                nodes[i].push(node);
+                if tile.inBounds then
+                    local node = Node(j,i,tile);
+                    nodes[i-nodes.y0].push(node);
+                end
             end
         end
         for i=1,#nodes,1 do
@@ -240,6 +270,9 @@ Map = function(filename)
                 end
             end
         end
+        nodes.getFromCoords = function(x,y)
+            return nodes[y-nodes.y0][x-nodes.x0];
+        end
         return nodes;
     end
     map.cellFromNode = function(node)
@@ -247,16 +280,16 @@ Map = function(filename)
     end
     map.getAdjacentCells = function(x,y)
         local adjs = Array();
-        if (x-1 >= 1) and (x-1 <= #(map.cells[1])) and (y >= 1) and (y <= #(map.cells)) then
+        if (x-1 >= 1) and (x-1 <= #(map.cells[1])) and (y >= 1) and (y <= #(map.cells)) and (x-1 > map.bounds.x0) then
             adjs.push(map.cells[y][x-1]);
         end
-        if (x+1 >= 1) and (x+1 <= #(map.cells[1])) and (y >= 1) and (y <= #(map.cells)) then
+        if (x+1 >= 1) and (x+1 <= #(map.cells[1])) and (y >= 1) and (y <= #(map.cells)) and (x+1 <= map.bounds.x1) then
             adjs.push(map.cells[y][x+1]);
         end
-        if (x >= 1) and (x <= #(map.cells[1])) and (y-1 >= 1) and (y-1 <= #(map.cells)) then
+        if (x >= 1) and (x <= #(map.cells[1])) and (y-1 >= 1) and (y-1 <= #(map.cells)) and (y-1 > map.bounds.y0) then
             adjs.push(map.cells[y-1][x]);
         end
-        if (x >= 1) and (x <= #(map.cells[1])) and (y+1 >= 1) and (y+1 <= #(map.cells)) then
+        if (x >= 1) and (x <= #(map.cells[1])) and (y+1 >= 1) and (y+1 <= #(map.cells)) and (y+1 <= map.bounds.y1) then
             adjs.push(map.cells[y+1][x]);
         end
         return adjs;
@@ -305,7 +338,7 @@ Map = function(filename)
                 local inRange = false;
                 local mhd = math.abs(x - j) + math.abs(y - i);
                 for k=1,#ranges,1 do
-                    if mhd == ranges[k] then
+                    if mhd == ranges[k] and map.cellInBounds(j,i) then
                         inRange = true;
                         break;
                     end

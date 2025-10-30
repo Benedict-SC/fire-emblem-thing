@@ -17,7 +17,7 @@ AIManager = function()
             end
             return not unit.friendly(x.cell.occupant);
         end);
-        local startNode = nodes[unit.y][unit.x];
+        local startNode = nodes.getFromCoords(unit.x,unit.y);
         ai.startNode = startNode; --save this for later pathfinding
         local nodeslist = Pathfinding.dijkstra(startNode,unit.mov); --populate the navigation nodes with costs
         for i=1,#nodeslist,1 do --for all those nodes, mark them 
